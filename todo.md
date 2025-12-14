@@ -30,3 +30,9 @@
 - [x] Fix MEET AI neon animation to match live site
 - [x] Fix phone number shake/vibrate animation
 - [x] Remove all blue color references - brand is purple only
+
+## Additional Fixes Needed
+- [x] Add Font Awesome icons to service cards
+- [x] Fix card background colors to match original (darker blue/purple)
+- [x] Ensure MEET AI text styling matches original exactly
+- [x] Verify all icon classes are correct (fa-brain, fa-code, fa-plug, fa-sync-alt, etc.)

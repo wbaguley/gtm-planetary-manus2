@@ -346,7 +346,7 @@ export default function Home() {
         <div id="particles-js" className="absolute inset-0"></div>
         <div className="container relative z-10 text-center">
           <h1 className="font-orbitron text-5xl md:text-7xl font-bold mb-6">
-            WHERE TRADES <span className="glitch neon-glow text-primary" data-text="MEET AI">MEET AI</span>
+            WHERE TRADES <span className="glitch neon-glow" data-text="MEET AI">MEET AI</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-muted-foreground reveal">
             We build smart workflows, AI agents, and automation tools to save time, cut costs, and grow your business.
@@ -408,43 +408,43 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            <Card className="bg-card border-primary/20 hover:border-primary transition-colors card-3d reveal">
+            <Card className="bg-[#1a1a3e] border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
               <CardContent className="p-6">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
                   <i className="fas fa-brain text-3xl text-primary"></i>
                 </div>
-                <h3 className="font-orbitron text-lg font-bold mb-2">AI Consulting & Strategy</h3>
-                <p className="text-sm text-muted-foreground">We build a comprehensive roadmap for automation. Our consulting services analyze your current workflows, identify inefficiencies, and develop strategic plans to implement AI solutions that deliver measurable results.</p>
+                <h3 className="font-orbitron text-lg font-bold mb-2 text-white">AI Consulting & Strategy</h3>
+                <p className="text-sm text-gray-300">We build a comprehensive roadmap for automation. Our consulting services analyze your current workflows, identify inefficiencies, and develop strategic plans to implement AI solutions that deliver measurable results.</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-primary/20 hover:border-primary transition-colors card-3d reveal">
+            <Card className="bg-[#1a1a3e] border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
               <CardContent className="p-6">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
                   <i className="fas fa-code text-3xl text-primary"></i>
                 </div>
-                <h3 className="font-orbitron text-lg font-bold mb-2">Custom AI Solution Development</h3>
-                <p className="text-sm text-muted-foreground">We build tailored AI systems designed for your unique business challenges. Our custom development approach ensures that every tool we create addresses your specific operational needs and integrates with your existing systems.</p>
+                <h3 className="font-orbitron text-lg font-bold mb-2 text-white">Custom AI Solution Development</h3>
+                <p className="text-sm text-gray-300">We build tailored AI systems designed for your unique business challenges. Our custom development approach ensures that every tool we create addresses your specific operational needs and integrates with your existing systems.</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-primary/20 hover:border-primary transition-colors card-3d reveal">
+            <Card className="bg-[#1a1a3e] border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
               <CardContent className="p-6">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
                   <i className="fas fa-plug text-3xl text-primary"></i>
                 </div>
-                <h3 className="font-orbitron text-lg font-bold mb-2">Automation Implementation & Integration</h3>
-                <p className="text-sm text-muted-foreground">Our team handles the complete setup, connection, and optimization of AI tools to create seamless workflows. We ensure all your systems work together efficiently without requiring technical expertise from your team.</p>
+                <h3 className="font-orbitron text-lg font-bold mb-2 text-white">Automation Implementation & Integration</h3>
+                <p className="text-sm text-gray-300">Our team handles the complete setup, connection, and optimization of AI tools to create seamless workflows. We ensure all your systems work together efficiently without requiring technical expertise from your team.</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-primary/20 hover:border-primary transition-colors card-3d reveal">
+            <Card className="bg-[#1a1a3e] border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
               <CardContent className="p-6">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <i className="fas fa-sync-alt text-3xl text-primary"></i>
                 </div>
-                <h3 className="font-orbitron text-lg font-bold mb-2">Fractional System Enablement & Optimization</h3>
-                <p className="text-sm text-muted-foreground">We deliver ongoing optimization and adaptive system engineering to keep your AI and automation tools aligned with your evolving business. Our enablement team acts as your behind-the-scenes tech partner—tuning workflows, adding capabilities, and helping you squeeze more ROI out of every tool.</p>
+                <h3 className="font-orbitron text-lg font-bold mb-2 text-white">Fractional System Enablement & Optimization</h3>
+                <p className="text-sm text-gray-300">We deliver ongoing optimization and adaptive system engineering to keep your AI and automation tools aligned with your evolving business. Our enablement team acts as your behind-the-scenes tech partner—tuning workflows, adding capabilities, and helping you squeeze more ROI out of every tool.</p>
               </CardContent>
             </Card>
           </div>
