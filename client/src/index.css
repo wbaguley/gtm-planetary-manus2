@@ -81,38 +81,39 @@
 }
 
 .dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  /* GTM Planetary Dark Theme - Purple Only */
+  --primary: oklch(0.62 0.27 295); /* #ad18fc purple */
+  --primary-foreground: oklch(0.96 0.01 265); /* light text */
+  --sidebar-primary: oklch(0.62 0.27 295);
+  --sidebar-primary-foreground: oklch(0.96 0.01 265);
+  --background: oklch(0.15 0 0); /* #121212 black */
+  --foreground: oklch(0.96 0.01 265); /* #f4f4f9 off-white */
+  --card: oklch(0.20 0.05 265);
+  --card-foreground: oklch(0.96 0.01 265);
+  --popover: oklch(0.18 0.05 265);
+  --popover-foreground: oklch(0.96 0.01 265);
+  --secondary: oklch(0.25 0.08 265); /* #1e1e3f dark blue */
+  --secondary-foreground: oklch(0.96 0.01 265);
+  --muted: oklch(0.30 0.05 265);
+  --muted-foreground: oklch(0.70 0.02 265);
+  --accent: oklch(0.62 0.27 295); /* primary purple */
+  --accent-foreground: oklch(0.96 0.01 265);
+  --destructive: oklch(0.55 0.25 25);
+  --destructive-foreground: oklch(0.96 0.01 265);
+  --border: oklch(0.30 0.08 265);
+  --input: oklch(0.30 0.08 265);
+  --ring: oklch(0.62 0.27 295);
+  --chart-1: oklch(0.68 0.24 290); /* light purple */
+  --chart-2: oklch(0.62 0.27 295); /* primary purple */
+  --chart-3: oklch(0.50 0.22 295); /* dark purple */
+  --chart-4: oklch(0.78 0.15 200); /* cyan accent */
+  --chart-5: oklch(0.68 0.25 345); /* pink accent */
+  --sidebar: oklch(0.18 0.05 265);
+  --sidebar-foreground: oklch(0.96 0.01 265);
+  --sidebar-accent: oklch(0.30 0.05 265);
+  --sidebar-accent-foreground: oklch(0.96 0.01 265);
+  --sidebar-border: oklch(0.30 0.08 265);
+  --sidebar-ring: oklch(0.62 0.27 295);
 }
 
 @layer base {
@@ -173,40 +174,224 @@
     min-width: 0;
   }
   
-  /* Neon glow effect for hero text */
+  /* Glitch Effect for MEET AI */
+  .glitch {
+    position: relative;
+    color: oklch(0.6 0.28 295); /* Primary purple */
+  }
+
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .glitch::before {
+    left: 2px;
+    text-shadow: -2px 0 oklch(0.88 0.12 195); /* Cyan */
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim 5s infinite linear alternate-reverse;
+  }
+
+  .glitch::after {
+    left: -2px;
+    text-shadow: -2px 0 oklch(0.65 0.32 310); /* Pink */
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim2 5s infinite linear alternate-reverse;
+  }
+
+  @keyframes glitch-anim {
+    0% { clip: rect(31px, 9999px, 94px, 0); }
+    4.166666666666666% { clip: rect(91px, 9999px, 43px, 0); }
+    8.333333333333332% { clip: rect(65px, 9999px, 85px, 0); }
+    12.5% { clip: rect(42px, 9999px, 72px, 0); }
+    16.666666666666664% { clip: rect(83px, 9999px, 15px, 0); }
+    20.833333333333336% { clip: rect(22px, 9999px, 96px, 0); }
+    25% { clip: rect(58px, 9999px, 11px, 0); }
+    29.166666666666668% { clip: rect(79px, 9999px, 35px, 0); }
+    33.33333333333333% { clip: rect(17px, 9999px, 67px, 0); }
+    37.5% { clip: rect(93px, 9999px, 24px, 0); }
+    41.66666666666667% { clip: rect(44px, 9999px, 88px, 0); }
+    45.83333333333333% { clip: rect(69px, 9999px, 52px, 0); }
+    50% { clip: rect(11px, 9999px, 78px, 0); }
+    54.166666666666664% { clip: rect(87px, 9999px, 33px, 0); }
+    58.333333333333336% { clip: rect(25px, 9999px, 61px, 0); }
+    62.5% { clip: rect(74px, 9999px, 19px, 0); }
+    66.66666666666666% { clip: rect(38px, 9999px, 95px, 0); }
+    70.83333333333334% { clip: rect(56px, 9999px, 47px, 0); }
+    75% { clip: rect(81px, 9999px, 29px, 0); }
+    79.16666666666666% { clip: rect(14px, 9999px, 73px, 0); }
+    83.33333333333334% { clip: rect(63px, 9999px, 51px, 0); }
+    87.5% { clip: rect(27px, 9999px, 84px, 0); }
+    91.66666666666666% { clip: rect(76px, 9999px, 36px, 0); }
+    95.83333333333334% { clip: rect(49px, 9999px, 68px, 0); }
+    100% { clip: rect(21px, 9999px, 92px, 0); }
+  }
+
+  @keyframes glitch-anim2 {
+    0% { clip: rect(65px, 9999px, 100px, 0); }
+    4.166666666666666% { clip: rect(28px, 9999px, 56px, 0); }
+    8.333333333333332% { clip: rect(77px, 9999px, 14px, 0); }
+    12.5% { clip: rect(41px, 9999px, 89px, 0); }
+    16.666666666666664% { clip: rect(59px, 9999px, 32px, 0); }
+    20.833333333333336% { clip: rect(18px, 9999px, 71px, 0); }
+    25% { clip: rect(86px, 9999px, 45px, 0); }
+    29.166666666666668% { clip: rect(23px, 9999px, 97px, 0); }
+    33.33333333333333% { clip: rect(72px, 9999px, 39px, 0); }
+    37.5% { clip: rect(12px, 9999px, 64px, 0); }
+    41.66666666666667% { clip: rect(81px, 9999px, 26px, 0); }
+    45.83333333333333% { clip: rect(47px, 9999px, 93px, 0); }
+    50% { clip: rect(69px, 9999px, 51px, 0); }
+    54.166666666666664% { clip: rect(15px, 9999px, 78px, 0); }
+    58.333333333333336% { clip: rect(84px, 9999px, 37px, 0); }
+    62.5% { clip: rect(29px, 9999px, 66px, 0); }
+    66.66666666666666% { clip: rect(75px, 9999px, 48px, 0); }
+    70.83333333333334% { clip: rect(34px, 9999px, 91px, 0); }
+    75% { clip: rect(62px, 9999px, 19px, 0); }
+    79.16666666666666% { clip: rect(88px, 9999px, 55px, 0); }
+    83.33333333333334% { clip: rect(24px, 9999px, 73px, 0); }
+    87.5% { clip: rect(67px, 9999px, 42px, 0); }
+    91.66666666666666% { clip: rect(11px, 9999px, 85px, 0); }
+    95.83333333333334% { clip: rect(79px, 9999px, 31px, 0); }
+    100% { clip: rect(46px, 9999px, 94px, 0); }
+  }
+
+  /* Neon Glow Effect */
   .neon-glow {
     text-shadow: 
-      0 0 10px rgba(173, 24, 252, 0.8),
-      0 0 20px rgba(173, 24, 252, 0.6),
-      0 0 30px rgba(173, 24, 252, 0.4),
-      0 0 40px rgba(173, 24, 252, 0.2);
-    animation: neon-pulse 2s ease-in-out infinite alternate;
+      0 0 10px oklch(0.6 0.28 295),
+      0 0 20px oklch(0.6 0.28 295),
+      0 0 30px oklch(0.6 0.28 295),
+      0 0 40px oklch(0.6 0.28 295);
+    animation: neon-flicker 3s infinite alternate;
   }
-  
-  @keyframes neon-pulse {
-    from {
+
+  @keyframes neon-flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
       text-shadow: 
-        0 0 10px rgba(173, 24, 252, 0.8),
-        0 0 20px rgba(173, 24, 252, 0.6),
-        0 0 30px rgba(173, 24, 252, 0.4),
-        0 0 40px rgba(173, 24, 252, 0.2);
+        0 0 10px oklch(0.6 0.28 295),
+        0 0 20px oklch(0.6 0.28 295),
+        0 0 30px oklch(0.6 0.28 295),
+        0 0 40px oklch(0.6 0.28 295);
     }
-    to {
-      text-shadow: 
-        0 0 15px rgba(173, 24, 252, 1),
-        0 0 30px rgba(173, 24, 252, 0.8),
-        0 0 45px rgba(173, 24, 252, 0.6),
-        0 0 60px rgba(173, 24, 252, 0.4);
+    20%, 24%, 55% {
+      text-shadow: none;
     }
+  }
+
+  /* Periodic Shake Animation for Phone Number */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+  }
+
+  .animate-shake-periodic {
+    animation: shake 5s ease-in-out 0s 1, shake 5s ease-in-out 45s infinite;
   }
   
   /* Gradient backgrounds */
   .gradient-primary {
-    background: linear-gradient(135deg, #ad18fc 0%, #a259ff 100%);
+    background: linear-gradient(135deg, oklch(0.6 0.28 295) 0%, oklch(0.68 0.24 290) 100%);
   }
   
   .gradient-secondary {
-    background: linear-gradient(135deg, #1e1e3f 0%, #6c28b4 100%);
+    background: linear-gradient(135deg, oklch(0.25 0.08 265) 0%, oklch(0.50 0.22 295) 100%);
+  }
+  
+  /* Grid Background */
+  .grid-bg {
+    background-image: 
+      linear-gradient(oklch(0.6 0.28 295) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.6 0.28 295) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.1;
+    animation: grid-move 20s linear infinite;
+  }
+
+  @keyframes grid-move {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 50px 50px;
+    }
+  }
+
+  /* Scan Line Effect */
+  .scan-lines {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scan-lines::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      transparent 50%,
+      rgba(173, 24, 252, 0.05) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    animation: scan 8s linear infinite;
+  }
+
+  @keyframes scan {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+  
+  /* Card 3D Hover Effect */
+  .card-3d {
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .card-3d:hover {
+    transform: rotateY(5deg) rotateX(5deg) scale(1.05);
+  }
+  
+  /* Pulse Border Effect */
+  .pulse-border {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pulse-border::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, oklch(0.6 0.28 295), oklch(0.88 0.12 195), oklch(0.65 0.32 310));
+    border-radius: inherit;
+    opacity: 0.7;
+    animation: pulse-border-anim 2s ease-in-out infinite;
+    z-index: -1;
+  }
+
+  @keyframes pulse-border-anim {
+    0%, 100% {
+      opacity: 0.7;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
   }
   
   /* Animated underline for nav links */
