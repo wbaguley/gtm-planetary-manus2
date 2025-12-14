@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -43,39 +44,40 @@
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
+  /* GTM Planetary Brand Colors - Dark Theme */
+  --primary: oklch(0.62 0.27 295); /* #ad18fc purple */
+  --primary-foreground: oklch(0.96 0.01 265); /* light text */
+  --sidebar-primary: oklch(0.62 0.27 295);
+  --sidebar-primary-foreground: oklch(0.96 0.01 265);
+  --chart-1: oklch(0.68 0.24 290);
+  --chart-2: oklch(0.62 0.27 295);
+  --chart-3: oklch(0.50 0.22 295);
+  --chart-4: oklch(0.78 0.15 200);
+  --chart-5: oklch(0.68 0.25 345);
   --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
+  --background: oklch(0.15 0 0); /* #121212 black */
+  --foreground: oklch(0.96 0.01 265); /* #f4f4f9 off-white */
+  --card: oklch(0.20 0.05 265);
+  --card-foreground: oklch(0.96 0.01 265);
+  --popover: oklch(0.18 0.05 265);
+  --popover-foreground: oklch(0.96 0.01 265);
+  --secondary: oklch(0.25 0.08 265); /* #1e1e3f dark blue */
+  --secondary-foreground: oklch(0.96 0.01 265);
+  --muted: oklch(0.30 0.05 265);
+  --muted-foreground: oklch(0.70 0.02 265);
+  --accent: oklch(0.62 0.27 295); /* primary purple */
+  --accent-foreground: oklch(0.96 0.01 265);
+  --destructive: oklch(0.55 0.25 25);
+  --destructive-foreground: oklch(0.96 0.01 265);
+  --border: oklch(0.30 0.08 265);
+  --input: oklch(0.30 0.08 265);
+  --ring: oklch(0.62 0.27 295);
+  --sidebar: oklch(0.18 0.05 265);
+  --sidebar-foreground: oklch(0.96 0.01 265);
+  --sidebar-accent: oklch(0.30 0.05 265);
+  --sidebar-accent-foreground: oklch(0.96 0.01 265);
+  --sidebar-border: oklch(0.30 0.08 265);
+  --sidebar-ring: oklch(0.62 0.27 295);
 }
 
 .dark {
@@ -117,8 +119,19 @@
   * {
     @apply border-border outline-ring/50;
   }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
   body {
     @apply bg-background text-foreground;
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -158,6 +171,138 @@
   .flex {
     min-height: 0;
     min-width: 0;
+  }
+  
+  /* Neon glow effect for hero text */
+  .neon-glow {
+    text-shadow: 
+      0 0 10px rgba(173, 24, 252, 0.8),
+      0 0 20px rgba(173, 24, 252, 0.6),
+      0 0 30px rgba(173, 24, 252, 0.4),
+      0 0 40px rgba(173, 24, 252, 0.2);
+    animation: neon-pulse 2s ease-in-out infinite alternate;
+  }
+  
+  @keyframes neon-pulse {
+    from {
+      text-shadow: 
+        0 0 10px rgba(173, 24, 252, 0.8),
+        0 0 20px rgba(173, 24, 252, 0.6),
+        0 0 30px rgba(173, 24, 252, 0.4),
+        0 0 40px rgba(173, 24, 252, 0.2);
+    }
+    to {
+      text-shadow: 
+        0 0 15px rgba(173, 24, 252, 1),
+        0 0 30px rgba(173, 24, 252, 0.8),
+        0 0 45px rgba(173, 24, 252, 0.6),
+        0 0 60px rgba(173, 24, 252, 0.4);
+    }
+  }
+  
+  /* Gradient backgrounds */
+  .gradient-primary {
+    background: linear-gradient(135deg, #ad18fc 0%, #a259ff 100%);
+  }
+  
+  .gradient-secondary {
+    background: linear-gradient(135deg, #1e1e3f 0%, #6c28b4 100%);
+  }
+  
+  /* Animated underline for nav links */
+  .nav-link-underline {
+    position: relative;
+  }
+  
+  .nav-link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #ad18fc;
+    transition: width 0.3s ease;
+  }
+  
+  .nav-link-underline:hover::after,
+  .nav-link-underline.active::after {
+    width: 100%;
+  }
+  
+  /* Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes fadeInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+  
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-10px);
+    }
+    60% {
+      transform: translateY(-5px);
+    }
+  }
+  
+  .animate-fadeInUp {
+    animation: fadeInUp 1s ease-out forwards;
+  }
+  
+  .animate-fadeInLeft {
+    animation: fadeInLeft 1s ease-out forwards;
+  }
+  
+  .animate-fadeInRight {
+    animation: fadeInRight 1s ease-out forwards;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-bounce-slow {
+    animation: bounce 2s infinite;
   }
 
   @media (min-width: 640px) {
