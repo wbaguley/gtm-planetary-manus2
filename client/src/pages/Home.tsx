@@ -345,8 +345,8 @@ export default function Home() {
         <div className="absolute inset-0 grid-bg"></div>
         <div id="particles-js" className="absolute inset-0"></div>
         <div className="container relative z-10 text-center">
-          <h1 className="font-orbitron text-5xl md:text-7xl font-bold mb-6">
-            WHERE TRADES <span className="glitch neon-glow" data-text="MEET AI">MEET AI</span>
+          <h1 className="font-orbitron text-5xl md:text-7xl font-bold mb-6 whitespace-nowrap">
+            WHERE TRADES <span className="glitch neon-glow inline-block" data-text="MEET AI">MEET AI</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-muted-foreground reveal">
             We build smart workflows, AI agents, and automation tools to save time, cut costs, and grow your business.
@@ -376,7 +376,7 @@ export default function Home() {
       </section>
 
       {/* About Section - Updated with FINAL intro video */}
-      <section id="about" className="py-20 bg-card">
+      <section id="about" className="py-20 bg-black">
         <div className="container">
           <div className="text-center mb-12 reveal">
             <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
@@ -398,7 +398,7 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="py-20">
+      <section id="services" className="py-20 bg-black">
         <div className="container">
           <div className="text-center mb-12 reveal">
             <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
@@ -408,7 +408,7 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            <Card className="bg-[#1a1a3e] border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
+            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
               <CardContent className="p-6">
                 <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
                   <i className="fas fa-brain text-3xl text-primary"></i>
@@ -418,7 +418,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#1a1a3e] border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
+            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
               <CardContent className="p-6">
                 <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
                   <i className="fas fa-code text-3xl text-primary"></i>
@@ -428,7 +428,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#1a1a3e] border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
+            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
               <CardContent className="p-6">
                 <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
                   <i className="fas fa-plug text-3xl text-primary"></i>
@@ -438,7 +438,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#1a1a3e] border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
+            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
               <CardContent className="p-6">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <i className="fas fa-sync-alt text-3xl text-primary"></i>
@@ -459,7 +459,7 @@ export default function Home() {
             </div>
 
             <div className="relative max-w-2xl mx-auto reveal">
-              <Card className="bg-card border-primary/20 card-3d">
+              <Card className="bg-black border-primary/20 card-3d">
                 <CardContent className="p-8 text-center">
                   <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i className={`fas ${products[currentCarouselIndex].icon} text-4xl text-primary`}></i>
@@ -516,7 +516,7 @@ export default function Home() {
           </p>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="bg-card border-primary/20 card-3d reveal">
+            <Card className="bg-black border-primary/20 card-3d reveal">
               <CardContent className="p-8">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <i className="fas fa-tools text-3xl text-primary"></i>
@@ -535,7 +535,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-primary/20 card-3d reveal">
+            <Card className="bg-black border-primary/20 card-3d reveal">
               <CardContent className="p-8">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <i className="fas fa-user-md text-3xl text-primary"></i>
@@ -558,7 +558,7 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-card">
+      <section id="pricing" className="py-20 bg-black">
         <div className="container">
           <div className="text-center mb-12 reveal">
             <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
@@ -572,7 +572,7 @@ export default function Home() {
           </p>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <Card className="bg-background border-primary/20 hover:border-primary transition-colors card-3d reveal">
+            <Card className="bg-black border-primary/30 hover:border-primary transition-colors card-3d reveal">
               <CardContent className="p-6">
                 <h3 className="font-orbitron text-xl font-bold mb-2">Standard Package</h3>
                 <div className="text-3xl font-bold text-primary mb-4">$4,900</div>
@@ -586,7 +586,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="bg-primary/10 border-primary card-3d reveal">
+            <Card className="bg-black border-primary hover:border-primary/80 card-3d reveal">
               <CardContent className="p-6">
                 <h3 className="font-orbitron text-xl font-bold mb-2">Plus Package</h3>
                 <div className="text-3xl font-bold text-primary mb-4">$7,500</div>
@@ -601,7 +601,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="bg-background border-primary/20 hover:border-primary transition-colors card-3d reveal">
+            <Card className="bg-black border-primary/30 hover:border-primary transition-colors card-3d reveal">
               <CardContent className="p-6">
                 <h3 className="font-orbitron text-xl font-bold mb-2">Premium Package</h3>
                 <div className="text-3xl font-bold text-primary mb-4">$15,000</div>
@@ -617,7 +617,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="bg-background border-primary/20 hover:border-primary transition-colors card-3d reveal">
+            <Card className="bg-black border-primary/30 hover:border-primary transition-colors card-3d reveal">
               <CardContent className="p-6">
                 <h3 className="font-orbitron text-xl font-bold mb-2">Enterprise Package</h3>
                 <div className="text-3xl font-bold text-primary mb-4">Call for Pricing</div>
@@ -675,7 +675,7 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20">
+      <section id="contact" className="py-20 bg-black">
         <div className="container">
           <div className="text-center mb-12 reveal">
             <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
@@ -727,7 +727,7 @@ export default function Home() {
               </div>
             </div>
 
-            <Card className="bg-card border-primary/20 reveal">
+            <Card className="bg-black border-primary/20 reveal">
               <CardContent className="p-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>

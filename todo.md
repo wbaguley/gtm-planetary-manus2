@@ -36,3 +36,11 @@
 - [x] Fix card background colors to match original (darker blue/purple)
 - [x] Ensure MEET AI text styling matches original exactly
 - [x] Verify all icon classes are correct (fa-brain, fa-code, fa-plug, fa-sync-alt, etc.)
+
+## Critical Fixes Required
+- [x] Fix MEET AI text to stay on same line as WHERE TRADES (not wrap)
+- [x] Change ALL section backgrounds from blue to pure black
+- [x] Change service card backgrounds from blue (#1a1a3e) to black
+- [x] Change pricing card backgrounds to black with purple borders
+- [x] Remove all blue/purple background colors - only black backgrounds allowed
+- [x] Ensure MEET AI text size matches WHERE TRADES text size
