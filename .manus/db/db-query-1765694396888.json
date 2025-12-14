@@ -1,0 +1,19 @@
+{
+  "query": "SELECT * FROM contact_submissions ORDER BY createdAt DESC LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3LAnvSXMR8umuBe.fb2e50ddb7b4 --database cKVyAHsRdKQ5ge73eKfXzT --execute SELECT * FROM contact_submissions ORDER BY createdAt DESC LIMIT 1;",
+  "rows": [
+    {
+      "id": "30001",
+      "name": "Test User",
+      "email": "test@example.com",
+      "phone": "555-1234",
+      "company": "Test Company",
+      "message": "This is a test message to verify the notification system is working correctly.",
+      "createdAt": "2025-12-14 06:39:19"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tphone\tcompany\tmessage\tcreatedAt\n30001\tTest User\ttest@example.com\t555-1234\tTest Company\tThis is a test message to verify the notification system is working correctly.\t2025-12-14 06:39:19\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

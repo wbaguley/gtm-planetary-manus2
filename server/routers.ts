@@ -2,6 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
+import { notifyOwner } from "./_core/notification";
 import { z } from "zod";
 
 export const appRouter = router({
@@ -30,6 +31,13 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const { createContactSubmission } = await import("./db");
         await createContactSubmission(input);
+        
+        // Send notification to owner
+        await notifyOwner({
+          title: "New Contact Form Submission",
+          content: `Name: ${input.name}\nEmail: ${input.email}\nPhone: ${input.phone || 'Not provided'}\nCompany: ${input.company || 'Not provided'}\nMessage: ${input.message}`,
+        });
+        
         return { success: true };
       }),
   }),
