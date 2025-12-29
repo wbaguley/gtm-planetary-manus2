@@ -344,8 +344,8 @@ export default function Home() {
       <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 scan-lines">
         <div className="absolute inset-0 grid-bg"></div>
         <div id="particles-js" className="absolute inset-0"></div>
-        <div className="container relative z-10 text-center">
-          <h1 className="font-orbitron text-5xl md:text-7xl font-bold mb-6 whitespace-nowrap">
+        <div className="container relative z-10 text-center px-4">
+          <h1 className="font-orbitron text-3xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight">
             WHERE TRADES <span className="glitch neon-glow inline-block" data-text="MEET AI">MEET AI</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-muted-foreground reveal">
@@ -385,14 +385,13 @@ export default function Home() {
             <div className="w-24 h-1 bg-primary mx-auto"></div>
           </div>
 
-          <div className="flex justify-center reveal">
-            <video 
-              className="w-full max-w-xs rounded-lg border-2 border-primary/20" 
-              controls
-            >
-              <source src="/intro-video.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+          <div className="max-w-2xl mx-auto text-center reveal">
+            <p className="text-lg text-gray-300 mb-4">
+              GTM Planetary LLC specializes in AI-driven automation solutions exclusively for trade and skill-based businesses.
+            </p>
+            <p className="text-gray-400">
+              We help HVAC, plumbing, electrical, construction companies, and skilled professionals like dentists and physical therapists streamline their operations with custom AI solutions.
+            </p>
           </div>
         </div>
       </section>

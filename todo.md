@@ -58,3 +58,7 @@
 ## Notification System
 - [x] Add Manus notification system for contact form submissions
 - [x] Send owner notification with contact details when form is submitted
+
+## Mobile Responsiveness Fixes
+- [x] Fix hero title text overflow on mobile (WHERE TRADES MEET AI)
+- [x] Replace video with text content in About section (video file too large for git)
