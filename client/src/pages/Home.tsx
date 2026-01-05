@@ -346,7 +346,7 @@ export default function Home() {
         <div id="particles-js" className="absolute inset-0"></div>
         <div className="container relative z-10 text-center px-4">
           <h1 className="font-orbitron text-3xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            WHERE TRADES <span className="glitch inline-block text-green-500" data-text="MEET AI" style={{textShadow: '0 0 10px #22c55e, 0 0 20px #22c55e, 0 0 30px #22c55e, 0 0 40px #22c55e'}}>MEET AI</span>
+            WHERE TRADES <span className="glitch neon-glow inline-block" data-text="MEET AI">MEET AI</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-muted-foreground reveal">
             We build smart workflows, AI agents, and automation tools to save time, cut costs, and grow your business.

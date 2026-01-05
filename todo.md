@@ -65,3 +65,4 @@
 
 ## Visual Design Updates
 - [x] Change MEET AI text color from purple to green
+- [x] Revert MEET AI text color back to original purple
