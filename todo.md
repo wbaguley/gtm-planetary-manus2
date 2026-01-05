@@ -62,3 +62,6 @@
 ## Mobile Responsiveness Fixes
 - [x] Fix hero title text overflow on mobile (WHERE TRADES MEET AI)
 - [x] Replace video with text content in About section (video file too large for git)
+
+## Visual Design Updates
+- [x] Change MEET AI text color from purple to green
