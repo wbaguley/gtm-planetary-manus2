@@ -66,3 +66,8 @@
 ## Visual Design Updates
 - [x] Change MEET AI text color from purple to green
 - [x] Revert MEET AI text color back to original purple
+
+## Footer and Legal Pages
+- [x] Update copyright year from 2025 to 2026
+- [x] Create Privacy Policy page
+- [x] Create Terms & Conditions page

@@ -831,17 +831,17 @@ export default function Home() {
           </div>
 
           <div className="text-center text-sm text-muted-foreground">
-            <p>&copy; 2025 GTM Planetary. All rights reserved.</p>
+            <p>&copy; 2026 GTM Planetary. All rights reserved.</p>
             <div className="mt-3 flex justify-center gap-4">
               <button onClick={() => setLocation("/blog")} className="text-white hover:text-primary transition-colors">
                 Blog
               </button>
               <span className="text-white">|</span>
-              <button onClick={() => setLocation("/privacy")} className="text-white hover:text-primary transition-colors">
+              <button onClick={() => setLocation("/privacy-policy")} className="text-white hover:text-primary transition-colors">
                 Privacy Policy
               </button>
               <span className="text-white">|</span>
-              <button onClick={() => setLocation("/termsandconditions")} className="text-white hover:text-primary transition-colors">
+              <button onClick={() => setLocation("/terms-and-conditions")} className="text-white hover:text-primary transition-colors">
                 Terms & Conditions
               </button>
             </div>
