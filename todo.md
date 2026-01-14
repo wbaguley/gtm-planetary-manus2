@@ -73,5 +73,5 @@
 - [x] Create Terms & Conditions page
 
 ## Contact Section Updates
-- [ ] Remove contact form
-- [ ] Replace with contact information only
+- [x] Remove contact form
+- [x] Replace with contact information only
