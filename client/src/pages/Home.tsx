@@ -683,13 +683,13 @@ export default function Home() {
             <div className="w-24 h-1 bg-primary mx-auto"></div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+          <div className="max-w-2xl mx-auto text-center">
             <div className="reveal">
               <h3 className="font-orbitron text-2xl font-bold mb-4">Get In Touch</h3>
-              <p className="text-lg mb-6">Ready to revolutionize your business with AI? Contact us today to schedule a consultation.</p>
+              <p className="text-lg mb-8">Ready to revolutionize your business with AI? Contact us today to schedule a consultation.</p>
               
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center gap-3">
+              <div className="space-y-6 mb-8">
+                <div className="flex items-center justify-center gap-3">
                   <i className="fas fa-phone text-primary text-xl"></i>
                   <div>
                     <a href="tel:888-451-2290" className="hover:text-primary transition-colors font-bold text-lg">
@@ -698,19 +698,19 @@ export default function Home() {
                     <p className="text-sm text-muted-foreground">Want to talk to an AI agent? <em>Call this number!</em></p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center gap-3">
                   <i className="fas fa-envelope text-primary text-xl"></i>
-                  <a href="mailto:support@gtmplanetary.com" className="hover:text-primary transition-colors">
+                  <a href="mailto:support@gtmplanetary.com" className="hover:text-primary transition-colors text-lg">
                     support@gtmplanetary.com
                   </a>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center gap-3">
                   <i className="fas fa-globe text-primary text-xl"></i>
-                  <span>www.gtmplanetary.com</span>
+                  <span className="text-lg">www.gtmplanetary.com</span>
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex gap-4 justify-center">
                 <a href="https://www.linkedin.com/company/gtm-planetary/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors">
                   <i className="fab fa-linkedin text-primary text-xl"></i>
                 </a>
@@ -725,72 +725,6 @@ export default function Home() {
                 </a>
               </div>
             </div>
-
-            <Card className="bg-black border-primary/20 reveal">
-              <CardContent className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Name *</Label>
-                    <Input
-                      id="name"
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="bg-background"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="bg-background"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="bg-background"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="company">Company</Label>
-                    <Input
-                      id="company"
-                      value={formData.company}
-                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                      className="bg-background"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="message">Message *</Label>
-                    <Textarea
-                      id="message"
-                      required
-                      rows={4}
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="bg-background"
-                    />
-                  </div>
-
-                  <Button type="submit" className="w-full" disabled={contactMutation.isPending}>
-                    {contactMutation.isPending ? "Sending..." : "Send Message"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>

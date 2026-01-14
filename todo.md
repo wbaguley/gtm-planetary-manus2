@@ -71,3 +71,7 @@
 - [x] Update copyright year from 2025 to 2026
 - [x] Create Privacy Policy page
 - [x] Create Terms & Conditions page
+
+## Contact Section Updates
+- [ ] Remove contact form
+- [ ] Replace with contact information only
