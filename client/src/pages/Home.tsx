@@ -315,16 +315,25 @@ export default function Home() {
 
             <div className="flex items-center gap-6">
               <ul className={`${mobileMenuOpen ? 'flex' : 'hidden'} md:flex flex-col md:flex-row absolute md:relative top-20 md:top-0 left-0 right-0 bg-background md:bg-transparent border-b md:border-0 border-border md:space-x-8 p-4 md:p-0`}>
-                {["home", "about", "services", "solutions", "pricing", "contact"].map((section) => (
+                {["home", "about", "services", "solutions", "pricing", "blog", "contact"].map((section) => (
                   <li key={section}>
-                    <button
-                      onClick={() => scrollToSection(section)}
-                      className={`block w-full md:w-auto text-left md:text-center py-2 md:py-0 font-orbitron uppercase text-sm tracking-wider transition-colors ${
-                        activeSection === section ? "text-primary" : "text-foreground hover:text-primary"
-                      }`}
-                    >
-                      {section === "solutions" ? "Who We Serve" : section}
-                    </button>
+                    {section === "blog" ? (
+                      <a
+                        href="/blog"
+                        className="block w-full md:w-auto text-left md:text-center py-2 md:py-0 font-orbitron uppercase text-sm tracking-wider transition-colors text-foreground hover:text-primary"
+                      >
+                        Blog
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => scrollToSection(section)}
+                        className={`block w-full md:w-auto text-left md:text-center py-2 md:py-0 font-orbitron uppercase text-sm tracking-wider transition-colors ${
+                          activeSection === section ? "text-primary" : "text-foreground hover:text-primary"
+                        }`}
+                      >
+                        {section === "solutions" ? "Who We Serve" : section}
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>

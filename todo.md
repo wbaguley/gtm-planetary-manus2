@@ -75,3 +75,22 @@
 ## Contact Section Updates
 - [x] Remove contact form
 - [x] Replace with contact information only
+
+## Blog System (OpenAI Cookbook Style)
+- [x] Fix broken /blog page (currently 404)
+- [x] Create blog hub with colorful topic category tiles
+- [x] Build blog post grid with cards (date, author, title, tags)
+- [ ] Add search functionality for blog posts
+- [ ] Implement "Load More" button for pagination
+- [x] Create blog post template with markdown rendering
+- [x] Add "View as Markdown" button to blog posts
+- [x] Add "Open in GitHub" button to blog posts
+- [x] Upload first blog post (RecursiveLargeModelCookbook.md)
+
+## Remaining Blog Tasks
+- [x] Add BLOG link to navigation menu
+- [x] Copy blog post markdown to public directory
+- [ ] Configure GitHub URL for "Open in GitHub" button (currently points to wbaguley/GTM_Planetary_Site2)
+- [ ] Test search functionality
+- [ ] Test topic category filtering (clicking on topic tiles)
+- [ ] Push all changes to GitHub repository
