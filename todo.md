@@ -100,3 +100,9 @@
 - [x] Remove unnecessary "Open in GitHub" button duplicate (line 118)
 - [x] Configure markdown modal to properly display raw markdown content
 - [x] Add copy-to-clipboard buttons to code blocks for easy copying of prompts and code
+
+## Blog System Additional Fixes
+- [x] Fix remaining nested anchor tag error in blog post page
+- [x] Add download markdown button to the markdown modal
+- [x] Fix code block styling with proper border/box
+- [x] Position copy button at top-right of code blocks

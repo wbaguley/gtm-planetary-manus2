@@ -65,9 +65,7 @@ export default function BlogPost() {
         <div className="text-center">
           <h1 className="font-orbitron text-4xl font-bold mb-4">Post Not Found</h1>
           <Link href="/blog">
-            <a>
-              <Button>Back to Blog</Button>
-            </a>
+            <Button>Back to Blog</Button>
           </Link>
         </div>
       </div>
@@ -172,11 +170,11 @@ export default function BlogPost() {
                 </a>
               ),
               pre: ({ children }) => (
-                <div className="relative group">
+                <div className="relative group my-4 rounded-lg border border-border bg-black/30 overflow-hidden">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background"
                     onClick={() => {
                       const code = (children as any)?.props?.children;
                       if (typeof code === 'string') {
@@ -188,7 +186,7 @@ export default function BlogPost() {
                     <i className="fas fa-copy mr-2"></i>
                     Copy
                   </Button>
-                  <pre>{children}</pre>
+                  <pre className="m-0 p-4 overflow-x-auto">{children}</pre>
                 </div>
               ),
               code: ({ className, children }) => {
@@ -222,7 +220,29 @@ export default function BlogPost() {
       <Dialog open={showMarkdown} onOpenChange={setShowMarkdown}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-orbitron">Markdown Source</DialogTitle>
+            <DialogTitle className="font-orbitron flex items-center justify-between">
+              <span>Markdown Source</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => {
+                  const blob = new Blob([content], { type: 'text/markdown' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${slug}.md`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                  toast.success('Markdown downloaded!');
+                }}
+              >
+                <i className="fas fa-download"></i>
+                Download
+              </Button>
+            </DialogTitle>
           </DialogHeader>
           <pre className="bg-black/50 p-4 rounded-lg overflow-x-auto">
             <code className="text-sm font-mono">{content}</code>
