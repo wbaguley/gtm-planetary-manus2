@@ -134,20 +134,23 @@ export default function BlogPost() {
         </div>
 
         {/* Content */}
-        <article className="prose prose-invert prose-lg max-w-none">
+        <article className="prose prose-invert prose-lg max-w-none
+          [&>*]:mb-6 [&>h1]:mt-12 [&>h1]:mb-6 [&>h2]:mt-10 [&>h2]:mb-5 [&>h3]:mt-8 [&>h3]:mb-4
+          [&>p]:leading-relaxed [&>p]:text-base [&>ul]:my-6 [&>ol]:my-6
+          [&>li]:mb-3 [&>li]:leading-relaxed">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeHighlight]}
             components={{
               // Custom styling for markdown elements
               h1: ({ children }) => (
-                <h1 className="font-orbitron text-3xl font-bold mt-8 mb-4">{children}</h1>
+                <h1 className="font-orbitron text-4xl font-bold mt-12 mb-6 leading-tight">{children}</h1>
               ),
               h2: ({ children }) => (
-                <h2 className="font-orbitron text-2xl font-bold mt-6 mb-3">{children}</h2>
+                <h2 className="font-orbitron text-3xl font-bold mt-10 mb-5 leading-snug">{children}</h2>
               ),
               h3: ({ children }) => (
-                <h3 className="font-orbitron text-xl font-bold mt-4 mb-2">{children}</h3>
+                <h3 className="font-orbitron text-2xl font-bold mt-8 mb-4 leading-snug">{children}</h3>
               ),
               a: ({ href, children }) => (
                 <a
@@ -159,8 +162,20 @@ export default function BlogPost() {
                   {children}
                 </a>
               ),
+              p: ({ children }) => (
+                <p className="mb-6 leading-relaxed text-base text-muted-foreground">{children}</p>
+              ),
+              ul: ({ children }) => (
+                <ul className="my-6 space-y-3 list-disc list-inside">{children}</ul>
+              ),
+              ol: ({ children }) => (
+                <ol className="my-6 space-y-3 list-decimal list-inside">{children}</ol>
+              ),
+              li: ({ children }) => (
+                <li className="mb-3 leading-relaxed text-muted-foreground">{children}</li>
+              ),
               pre: ({ children }) => (
-                <div className="relative group my-4 rounded-lg border border-border bg-black/30 overflow-hidden">
+                <div className="relative group my-8 rounded-lg border border-border bg-black/30 overflow-hidden">
                   <Button
                     variant="ghost"
                     size="sm"
