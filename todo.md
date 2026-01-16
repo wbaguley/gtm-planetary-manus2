@@ -118,3 +118,6 @@
 ## Fix All Nested Anchor Tags
 - [x] Find all Link components with nested <a> tags across entire codebase
 - [x] Fix all instances to prevent recurring console errors
+
+## Blog Article Update
+- [x] Replace RecursiveLargeModelCookbook.md with restructured version
