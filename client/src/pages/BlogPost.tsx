@@ -166,13 +166,13 @@ export default function BlogPost() {
                 <p className="mb-6 leading-relaxed text-base text-muted-foreground">{children}</p>
               ),
               ul: ({ children }) => (
-                <ul className="my-6 space-y-3 list-disc list-inside">{children}</ul>
+                <ul className="my-6 space-y-2 ml-6 list-disc">{children}</ul>
               ),
               ol: ({ children }) => (
-                <ol className="my-6 space-y-3 list-decimal list-inside">{children}</ol>
+                <ol className="my-6 space-y-2 ml-6 list-decimal">{children}</ol>
               ),
               li: ({ children }) => (
-                <li className="mb-3 leading-relaxed text-muted-foreground">{children}</li>
+                <li className="mb-2 leading-relaxed text-muted-foreground pl-2">{children}</li>
               ),
               pre: ({ children }) => (
                 <div className="relative group my-8 rounded-lg border border-border bg-black/30 overflow-hidden">

@@ -131,3 +131,7 @@
 - [x] Add proper paragraph spacing between sections
 - [x] Improve heading spacing and hierarchy
 - [x] Optimize font sizes for mobile and desktop
+
+## Fix List Formatting
+- [x] Fix bullet point styling to show proper bullets instead of tiny dots
+- [x] Fix numbered list formatting in TL;DR section
