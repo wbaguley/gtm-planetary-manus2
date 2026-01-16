@@ -106,3 +106,6 @@
 - [x] Add download markdown button to the markdown modal
 - [x] Fix code block styling with proper border/box
 - [x] Position copy button at top-right of code blocks
+
+## Blog Page Logo Fix
+- [x] Fix broken logo image on Blog page (line 53)

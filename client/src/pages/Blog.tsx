@@ -48,11 +48,9 @@ export default function Blog() {
       {/* Header */}
       <header className="border-b border-border">
         <div className="container py-6">
-          <Link href="/">
-            <a className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <img src="/logo.svg" alt="GTM Planetary" className="h-10 w-10" />
-              <span className="font-orbitron text-xl font-bold">GTM Planetary Blog</span>
-            </a>
+          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <img src="/logo.png" alt="GTM Planetary" className="h-10 w-10" />
+            <span className="font-orbitron text-xl font-bold">GTM Planetary Blog</span>
           </Link>
         </div>
       </header>
