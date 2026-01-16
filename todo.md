@@ -121,3 +121,7 @@
 
 ## Blog Article Update
 - [x] Replace RecursiveLargeModelCookbook.md with restructured version
+
+## Update Author Avatar Image
+- [x] Copy attached image to public directory
+- [x] Update BlogPost.tsx to use new avatar image path

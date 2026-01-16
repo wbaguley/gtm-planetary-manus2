@@ -23,7 +23,7 @@ const blogPosts = [
     date: "Jan 15, 2026",
     author: {
       name: "Wyatt Baguley",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Wyatt",
+      avatar: "/wyatt-avatar.png",
     },
     tags: ["AI Automation", "Technical"],
     category: "AI Automation",

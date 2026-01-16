@@ -26,7 +26,7 @@ const blogPosts: Record<string, {
     date: "Jan 15, 2026",
     author: {
       name: "Wyatt Baguley",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Wyatt",
+      avatar: "/wyatt-avatar.png",
       company: "GTM Planetary",
     },
     tags: ["AI Automation", "Technical", "Advanced"],
