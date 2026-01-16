@@ -78,7 +78,7 @@ export default function BlogPost() {
       <header className="border-b border-border">
         <div className="container py-6">
           <Link href="/blog" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <img src="/logo.svg" alt="GTM Planetary" className="h-10 w-10" />
+            <img src="/logo.png" alt="GTM Planetary" className="h-10 w-10" />
             <span className="font-orbitron text-xl font-bold">GTM Planetary Cookbook</span>
           </Link>
         </div>
@@ -110,16 +110,6 @@ export default function BlogPost() {
           </div>
 
           <div className="flex gap-3">
-            {post.githubUrl && (
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => window.open(post.githubUrl, '_blank', 'noopener,noreferrer')}
-              >
-                <i className="fab fa-github"></i>
-                Open in GitHub
-              </Button>
-            )}
             <Button
               variant="outline"
               className="gap-2"

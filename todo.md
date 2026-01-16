@@ -109,3 +109,8 @@
 
 ## Blog Page Logo Fix
 - [x] Fix broken logo image on Blog page (line 53)
+
+## Logo and Button Fixes
+- [x] Fix broken logo on BlogPost page (line 81)
+- [x] Check and fix logo on all other pages
+- [x] Remove "Open in GitHub" button from BlogPost page (line 114)
