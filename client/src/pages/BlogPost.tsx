@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.min.css";
+import { toast } from "sonner";
 
 // Blog posts data (will match the data in Blog.tsx)
 const blogPosts: Record<string, {
@@ -78,11 +79,9 @@ export default function BlogPost() {
       {/* Header */}
       <header className="border-b border-border">
         <div className="container py-6">
-          <Link href="/blog">
-            <a className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <img src="/logo.svg" alt="GTM Planetary" className="h-10 w-10" />
-              <span className="font-orbitron text-xl font-bold">GTM Planetary Cookbook</span>
-            </a>
+          <Link href="/blog" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <img src="/logo.svg" alt="GTM Planetary" className="h-10 w-10" />
+            <span className="font-orbitron text-xl font-bold">GTM Planetary Cookbook</span>
           </Link>
         </div>
       </header>
@@ -114,12 +113,14 @@ export default function BlogPost() {
 
           <div className="flex gap-3">
             {post.githubUrl && (
-              <a href={post.githubUrl} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="gap-2">
-                  <i className="fab fa-github"></i>
-                  Open in GitHub
-                </Button>
-              </a>
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() => window.open(post.githubUrl, '_blank', 'noopener,noreferrer')}
+              >
+                <i className="fab fa-github"></i>
+                Open in GitHub
+              </Button>
             )}
             <Button
               variant="outline"
@@ -170,6 +171,26 @@ export default function BlogPost() {
                   {children}
                 </a>
               ),
+              pre: ({ children }) => (
+                <div className="relative group">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => {
+                      const code = (children as any)?.props?.children;
+                      if (typeof code === 'string') {
+                        navigator.clipboard.writeText(code);
+                        toast.success('Code copied to clipboard!');
+                      }
+                    }}
+                  >
+                    <i className="fas fa-copy mr-2"></i>
+                    Copy
+                  </Button>
+                  <pre>{children}</pre>
+                </div>
+              ),
               code: ({ className, children }) => {
                 const isInline = !className;
                 return isInline ? (
@@ -189,12 +210,10 @@ export default function BlogPost() {
         {/* Back to Blog */}
         <div className="mt-12 pt-8 border-t border-border">
           <Link href="/blog">
-            <a>
-              <Button variant="outline">
-                <i className="fas fa-arrow-left mr-2"></i>
-                Back to Blog
-              </Button>
-            </a>
+            <Button variant="outline">
+              <i className="fas fa-arrow-left mr-2"></i>
+              Back to Blog
+            </Button>
           </Link>
         </div>
       </div>
@@ -206,7 +225,7 @@ export default function BlogPost() {
             <DialogTitle className="font-orbitron">Markdown Source</DialogTitle>
           </DialogHeader>
           <pre className="bg-black/50 p-4 rounded-lg overflow-x-auto">
-            <code className="text-sm font-mono">{post.content}</code>
+            <code className="text-sm font-mono">{content}</code>
           </pre>
         </DialogContent>
       </Dialog>

@@ -94,3 +94,9 @@
 - [ ] Test search functionality
 - [ ] Test topic category filtering (clicking on topic tiles)
 - [ ] Push all changes to GitHub repository
+
+## Blog System Bug Fixes
+- [x] Fix nested anchor tag error (console error: cannot contain a nested <a>)
+- [x] Remove unnecessary "Open in GitHub" button duplicate (line 118)
+- [x] Configure markdown modal to properly display raw markdown content
+- [x] Add copy-to-clipboard buttons to code blocks for easy copying of prompts and code
