@@ -114,3 +114,7 @@
 - [x] Fix broken logo on BlogPost page (line 81)
 - [x] Check and fix logo on all other pages
 - [x] Remove "Open in GitHub" button from BlogPost page (line 114)
+
+## Fix All Nested Anchor Tags
+- [x] Find all Link components with nested <a> tags across entire codebase
+- [x] Fix all instances to prevent recurring console errors

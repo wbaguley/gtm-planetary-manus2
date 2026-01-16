@@ -93,48 +93,46 @@ export default function Blog() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayedPosts.map((post) => (
               <Link key={post.id} href={`/blog/${post.id}`}>
-                <a>
-                  <Card className="bg-card border-border hover:border-primary/50 transition-all hover:scale-105 h-full">
-                    <CardContent className="p-6">
-                      {/* Date */}
-                      <p className="text-sm text-muted-foreground mb-3">{post.date}</p>
+                <Card className="bg-card border-border hover:border-primary/50 transition-all hover:scale-105 h-full cursor-pointer">
+                  <CardContent className="p-6">
+                    {/* Date */}
+                    <p className="text-sm text-muted-foreground mb-3">{post.date}</p>
 
-                      {/* Title */}
-                      <h3 className="font-orbitron text-xl font-bold mb-3 line-clamp-2">
-                        {post.title}
-                      </h3>
+                    {/* Title */}
+                    <h3 className="font-orbitron text-xl font-bold mb-3 line-clamp-2">
+                      {post.title}
+                    </h3>
 
-                      {/* Excerpt */}
-                      <p className="text-muted-foreground mb-4 line-clamp-3">
-                        {post.excerpt}
-                      </p>
+                    {/* Excerpt */}
+                    <p className="text-muted-foreground mb-4 line-clamp-3">
+                      {post.excerpt}
+                    </p>
 
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {post.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Author */}
-                      <div className="flex items-center gap-2">
-                        <img
-                          src={post.author.avatar}
-                          alt={post.author.name}
-                          className="w-6 h-6 rounded-full"
-                        />
-                        <span className="text-sm text-muted-foreground">
-                          {post.author.name}
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {post.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary"
+                        >
+                          {tag}
                         </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </a>
+                      ))}
+                    </div>
+
+                    {/* Author */}
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={post.author.avatar}
+                        alt={post.author.name}
+                        className="w-6 h-6 rounded-full"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        {post.author.name}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
               </Link>
             ))}
           </div>
