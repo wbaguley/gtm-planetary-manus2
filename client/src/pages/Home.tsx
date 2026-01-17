@@ -787,6 +787,10 @@ export default function Home() {
               <button onClick={() => setLocation("/terms-and-conditions")} className="text-white hover:text-primary transition-colors">
                 Terms & Conditions
               </button>
+              <span className="text-muted-foreground/20">|</span>
+              <button onClick={() => setLocation("/admin/blog")} className="text-muted-foreground/20 hover:text-muted-foreground/40 transition-colors text-xs">
+                ·
+              </button>
             </div>
           </div>
         </div>

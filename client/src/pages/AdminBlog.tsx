@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Link, useLocation } from "wouter";
+import { getLoginUrl } from "@/const";
 
 export function AdminBlog() {
   const { user, loading: authLoading } = useAuth();
@@ -30,8 +31,25 @@ export function AdminBlog() {
   const updateMutation = trpc.blog.update.useMutation();
   const deleteMutation = trpc.blog.delete.useMutation();
 
-  // Redirect if not admin
-  if (!authLoading && (!user || user.role !== 'admin')) {
+  // Show login button if not authenticated
+  if (!authLoading && !user) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <Card className="p-8 max-w-md w-full text-center">
+          <h1 className="text-2xl font-bold mb-4">Admin Access Required</h1>
+          <p className="text-muted-foreground mb-6">
+            Please sign in to access the blog admin panel.
+          </p>
+          <Button onClick={() => window.location.href = getLoginUrl()} className="w-full">
+            Sign In
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  // Redirect if authenticated but not admin
+  if (!authLoading && user && user.role !== 'admin') {
     setLocation('/');
     return null;
   }

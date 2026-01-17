@@ -172,3 +172,11 @@
 - [x] Diagnose why /admin/blog redirects to main page
 - [x] Fix routing or authentication problem
 - [x] Test admin page access
+
+## Fix 404 on Published Site for /admin/blog
+- [ ] Check App.tsx routing configuration
+- [ ] Fix routing issue causing 404 on published site
+
+## Add Hidden Login Link
+- [x] Add subtle login link to footer (hard to see)
+- [x] Improve AdminBlog to show login button instead of blank page
