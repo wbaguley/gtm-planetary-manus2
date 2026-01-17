@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, contactSubmissions, InsertContactSubmission } from "../drizzle/schema";
+import { InsertUser, users, contactSubmissions, InsertContactSubmission, blogPosts, InsertBlogPost, BlogPost } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -100,6 +100,82 @@ export async function createContactSubmission(data: InsertContactSubmission) {
     return result;
   } catch (error) {
     console.error("[Database] Failed to create contact submission:", error);
+    throw error;
+  }
+}
+
+// Blog post helpers
+export async function createBlogPost(data: InsertBlogPost) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  
+  try {
+    const result = await db.insert(blogPosts).values(data);
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to create blog post:", error);
+    throw error;
+  }
+}
+
+export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+  
+  try {
+    const result = await db.select().from(blogPosts).orderBy(desc(blogPosts.publishedAt));
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to get blog posts:", error);
+    return [];
+  }
+}
+
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+  const db = await getDb();
+  if (!db) {
+    return undefined;
+  }
+  
+  try {
+    const result = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  } catch (error) {
+    console.error("[Database] Failed to get blog post:", error);
+    return undefined;
+  }
+}
+
+export async function updateBlogPost(id: number, data: Partial<InsertBlogPost>) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  
+  try {
+    const result = await db.update(blogPosts).set(data).where(eq(blogPosts.id, id));
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to update blog post:", error);
+    throw error;
+  }
+}
+
+export async function deleteBlogPost(id: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  
+  try {
+    const result = await db.delete(blogPosts).where(eq(blogPosts.id, id));
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to delete blog post:", error);
     throw error;
   }
 }

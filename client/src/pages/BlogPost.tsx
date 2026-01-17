@@ -7,57 +7,41 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.min.css";
 import { toast } from "sonner";
-
-// Blog posts data (will match the data in Blog.tsx)
-const blogPosts: Record<string, {
-  title: string;
-  date: string;
-  author: {
-    name: string;
-    avatar: string;
-    company?: string;
-  };
-  tags: string[];
-  content: string;
-  githubUrl?: string;
-}> = {
-  "recursive-large-model-cookbook": {
-    title: "Recursive Large Model Cookbook",
-    date: "Jan 15, 2026",
-    author: {
-      name: "Wyatt Baguley",
-      avatar: "/wyatt-avatar.png",
-      company: "GTM Planetary",
-    },
-    tags: ["AI Automation", "Technical", "Advanced"],
-    content: "", // Will be populated from markdown file
-    githubUrl: "https://github.com/wbaguley/GTM_Planetary_Site2/blob/main/blog/recursive-large-model-cookbook.md",
-  },
-};
+import { trpc } from "@/lib/trpc";
 
 export default function BlogPost() {
   const [, params] = useRoute("/blog/:slug");
   const [showMarkdown, setShowMarkdown] = useState(false);
-  const [content, setContent] = useState("");
-  const [loading, setLoading] = useState(true);
   
   const slug = params?.slug || "";
-  const post = blogPosts[slug];
+  const { data: post, isLoading } = trpc.blog.getBySlug.useQuery({ slug });
 
-  useEffect(() => {
-    if (post) {
-      fetch(`/blog/${slug}.md`)
-        .then(res => res.text())
-        .then(text => {
-          setContent(text);
-          setLoading(false);
-        })
-        .catch(err => {
-          console.error("Failed to load blog content:", err);
-          setLoading(false);
-        });
-    }
-  }, [slug, post]);
+  const copyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast.success("Code copied to clipboard!");
+  };
+
+  const downloadMarkdown = () => {
+    if (!post) return;
+    const blob = new Blob([post.content], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${post.slug}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Markdown downloaded!");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -86,7 +70,13 @@ export default function BlogPost() {
 
       <div className="container py-12 max-w-4xl">
         {/* Date */}
-        <p className="text-muted-foreground mb-4">{post.date}</p>
+        <p className="text-muted-foreground mb-4">
+          {new Date(post.publishedAt).toLocaleDateString('en-US', { 
+            month: 'long', 
+            day: 'numeric', 
+            year: 'numeric' 
+          })}
+        </p>
 
         {/* Title */}
         <h1 className="font-orbitron text-4xl md:text-5xl font-bold mb-6">
@@ -97,25 +87,25 @@ export default function BlogPost() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-8 border-b border-border">
           <div className="flex items-center gap-3">
             <img
-              src={post.author.avatar}
-              alt={post.author.name}
+              src={post.authorAvatar || "/Circuit2.png"}
+              alt={post.author}
               className="w-12 h-12 rounded-full"
             />
             <div>
-              <p className="font-medium">{post.author.name}</p>
-              {post.author.company && (
-                <p className="text-sm text-muted-foreground">{post.author.company}</p>
+              <p className="font-medium">{post.author}</p>
+              {post.authorCompany && (
+                <p className="text-sm text-muted-foreground">{post.authorCompany}</p>
               )}
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <Button
               variant="outline"
-              className="gap-2"
+              size="sm"
               onClick={() => setShowMarkdown(true)}
             >
-              <i className="fas fa-code"></i>
+              <i className="fas fa-file-code mr-2"></i>
               View as Markdown
             </Button>
           </div>
@@ -123,134 +113,114 @@ export default function BlogPost() {
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {post.tags.map((tag) => (
+          {(post.tags || "").split(',').filter(Boolean).map((tag: string) => (
             <span
               key={tag}
-              className="px-3 py-1 text-sm font-medium rounded-full bg-primary/10 text-primary"
+              className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary"
             >
-              {tag}
+              {tag.trim()}
             </span>
           ))}
         </div>
 
         {/* Content */}
-        <article className="prose prose-invert prose-lg max-w-none
-          [&>*]:mb-6 [&>h1]:mt-12 [&>h1]:mb-6 [&>h2]:mt-10 [&>h2]:mb-5 [&>h3]:mt-8 [&>h3]:mb-4
-          [&>p]:leading-relaxed [&>p]:text-base [&>ul]:my-6 [&>ol]:my-6
-          [&>li]:mb-3 [&>li]:leading-relaxed">
+        <article className="prose prose-invert max-w-none">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeHighlight]}
             components={{
-              // Custom styling for markdown elements
               h1: ({ children }) => (
-                <h1 className="font-orbitron text-4xl font-bold mt-12 mb-6 leading-tight">{children}</h1>
+                <h1 className="font-orbitron text-4xl font-bold mt-12 mb-6 first:mt-0">
+                  {children}
+                </h1>
               ),
               h2: ({ children }) => (
-                <h2 className="font-orbitron text-3xl font-bold mt-10 mb-5 leading-snug">{children}</h2>
+                <h2 className="font-orbitron text-3xl font-bold mt-10 mb-5">
+                  {children}
+                </h2>
               ),
               h3: ({ children }) => (
-                <h3 className="font-orbitron text-2xl font-bold mt-8 mb-4 leading-snug">{children}</h3>
-              ),
-              a: ({ href, children }) => (
-                <a
-                  href={href}
-                  className="text-primary hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <h3 className="font-orbitron text-2xl font-bold mt-8 mb-4">
                   {children}
-                </a>
+                </h3>
               ),
               p: ({ children }) => (
-                <p className="mb-6 leading-relaxed text-base text-muted-foreground">{children}</p>
+                <p className="mb-6 leading-relaxed text-base">
+                  {children}
+                </p>
               ),
               ul: ({ children }) => (
-                <ul className="my-6 space-y-2 ml-6 list-disc">{children}</ul>
+                <ul className="mb-6 ml-6 space-y-2 list-disc">
+                  {children}
+                </ul>
               ),
               ol: ({ children }) => (
-                <ol className="my-6 space-y-2 ml-6 list-decimal">{children}</ol>
+                <ol className="mb-6 ml-6 space-y-2 list-decimal">
+                  {children}
+                </ol>
               ),
               li: ({ children }) => (
-                <li className="mb-2 leading-relaxed text-muted-foreground pl-2">{children}</li>
+                <li className="leading-relaxed">
+                  {children}
+                </li>
               ),
-              pre: ({ children }) => (
-                <div className="relative group my-8 rounded-lg border border-border bg-black/30 overflow-hidden">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background"
-                    onClick={() => {
-                      const code = (children as any)?.props?.children;
-                      if (typeof code === 'string') {
-                        navigator.clipboard.writeText(code);
-                        toast.success('Code copied to clipboard!');
-                      }
-                    }}
-                  >
-                    <i className="fas fa-copy mr-2"></i>
-                    Copy
-                  </Button>
-                  <pre className="m-0 p-4 overflow-x-auto">{children}</pre>
-                </div>
-              ),
-              code: ({ className, children }) => {
-                const isInline = !className;
-                return isInline ? (
-                  <code className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-sm font-mono">
+              code: ({ inline, className, children, ...props }: any) => {
+                const match = /language-(\w+)/.exec(className || '');
+                const codeString = String(children).replace(/\n$/, '');
+                
+                if (!inline && match) {
+                  return (
+                    <div className="relative my-6 rounded-lg border border-border bg-black/50 overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-black/30">
+                        <span className="text-xs text-muted-foreground font-mono">{match[1]}</span>
+                        <button
+                          onClick={() => copyCode(codeString)}
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                        >
+                          <i className="fas fa-copy"></i>
+                          Copy
+                        </button>
+                      </div>
+                      <pre className="p-4 overflow-x-auto">
+                        <code className={className} {...props}>
+                          {children}
+                        </code>
+                      </pre>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <code className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-mono text-sm" {...props}>
                     {children}
                   </code>
-                ) : (
-                  <code className={className}>{children}</code>
                 );
               },
             }}
           >
-            {loading ? "Loading..." : content}
+            {post.content}
           </ReactMarkdown>
         </article>
-
-        {/* Back to Blog */}
-        <div className="mt-12 pt-8 border-t border-border">
-          <Link href="/blog">
-            <Button variant="outline">
-              <i className="fas fa-arrow-left mr-2"></i>
-              Back to Blog
-            </Button>
-          </Link>
-        </div>
       </div>
 
-      {/* Markdown View Dialog */}
+      {/* Markdown Modal */}
       <Dialog open={showMarkdown} onOpenChange={setShowMarkdown}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-orbitron flex items-center justify-between">
-              <span>Markdown Source</span>
+            <div className="flex items-center justify-between">
+              <DialogTitle>Markdown Source</DialogTitle>
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2"
-                onClick={() => {
-                  const blob = new Blob([content], { type: 'text/markdown' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${slug}.md`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                  toast.success('Markdown downloaded!');
-                }}
+                onClick={downloadMarkdown}
               >
-                <i className="fas fa-download"></i>
+                <i className="fas fa-download mr-2"></i>
                 Download
               </Button>
-            </DialogTitle>
+            </div>
           </DialogHeader>
           <pre className="bg-black/50 p-4 rounded-lg overflow-x-auto">
-            <code className="text-sm font-mono">{content}</code>
+            <code className="text-sm font-mono">{post.content}</code>
           </pre>
         </DialogContent>
       </Dialog>

@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { trpc } from "@/lib/trpc";
 
 // Topic categories with gradient colors (OpenAI Cookbook style)
 const topics = [
@@ -14,30 +15,16 @@ const topics = [
   { name: "Case Studies", gradient: "from-cyan-400 via-blue-400 to-indigo-500" },
 ];
 
-// Blog posts data (will be populated from database later)
-const blogPosts = [
-  {
-    id: "recursive-large-model-cookbook",
-    title: "Recursive Large Model Cookbook",
-    excerpt: "A comprehensive guide to building recursive AI systems for trade automation.",
-    date: "Jan 15, 2026",
-    author: {
-      name: "Wyatt Baguley",
-      avatar: "/wyatt-avatar.png",
-    },
-    tags: ["AI Automation", "Technical"],
-    category: "AI Automation",
-  },
-];
-
 export default function Blog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [visiblePosts, setVisiblePosts] = useState(6);
+  
+  const { data: blogPosts, isLoading } = trpc.blog.list.useQuery();
 
-  const filteredPosts = blogPosts.filter((post) =>
+  const filteredPosts = (blogPosts || []).filter((post) =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+    (post.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (post.tags || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const displayedPosts = filteredPosts.slice(0, visiblePosts);
@@ -90,72 +77,82 @@ export default function Blog() {
         {/* Blog Posts Grid */}
         <div className="mb-16">
           <h2 className="font-orbitron text-3xl font-bold mb-8">Latest Articles</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayedPosts.map((post) => (
-              <Link key={post.id} href={`/blog/${post.id}`}>
-                <Card className="bg-card border-border hover:border-primary/50 transition-all hover:scale-105 h-full cursor-pointer">
-                  <CardContent className="p-6">
-                    {/* Date */}
-                    <p className="text-sm text-muted-foreground mb-3">{post.date}</p>
+          
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Loading articles...</p>
+            </div>
+          ) : displayedPosts.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No articles found.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayedPosts.map((post) => (
+                <Link key={post.id} href={`/blog/${post.slug}`}>
+                  <Card className="bg-card border-border hover:border-primary/50 transition-all hover:scale-105 h-full cursor-pointer">
+                    <CardContent className="p-6">
+                      {/* Date */}
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {new Date(post.publishedAt).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
+                      </p>
 
-                    {/* Title */}
-                    <h3 className="font-orbitron text-xl font-bold mb-3 line-clamp-2">
-                      {post.title}
-                    </h3>
+                      {/* Title */}
+                      <h3 className="font-orbitron text-xl font-bold mb-3 line-clamp-2">
+                        {post.title}
+                      </h3>
 
-                    {/* Excerpt */}
-                    <p className="text-muted-foreground mb-4 line-clamp-3">
-                      {post.excerpt}
-                    </p>
+                      {/* Excerpt */}
+                      <p className="text-muted-foreground mb-4 line-clamp-3">
+                        {post.description || ""}
+                      </p>
 
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {post.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                      {/* Author */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <img
+                          src={post.authorAvatar || "/Circuit2.png"}
+                          alt={post.author}
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <div className="text-sm">
+                          <p className="font-medium">{post.author}</p>
+                          {post.authorCompany && (
+                            <p className="text-muted-foreground text-xs">{post.authorCompany}</p>
+                          )}
+                        </div>
+                      </div>
 
-                    {/* Author */}
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={post.author.avatar}
-                        alt={post.author.name}
-                        className="w-6 h-6 rounded-full"
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {post.author.name}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-
-          {/* Load More Button */}
-          {hasMore && (
-            <div className="flex justify-center mt-8">
-              <Button
-                onClick={() => setVisiblePosts(prev => prev + 6)}
-                variant="outline"
-                size="lg"
-              >
-                Load More
-              </Button>
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-2">
+                        {(post.tags || "").split(',').filter(Boolean).map((tag: string) => (
+                          <span
+                            key={tag}
+                            className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary"
+                          >
+                            {tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
             </div>
           )}
 
-          {/* No Results */}
-          {filteredPosts.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">
-                No articles found matching "{searchQuery}"
-              </p>
+          {/* Load More Button */}
+          {hasMore && (
+            <div className="text-center mt-8">
+              <Button
+                variant="outline"
+                onClick={() => setVisiblePosts(prev => prev + 6)}
+              >
+                Load More
+              </Button>
             </div>
           )}
         </div>

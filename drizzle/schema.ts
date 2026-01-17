@@ -37,3 +37,21 @@ export const contactSubmissions = mysqlTable("contact_submissions", {
 
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
+
+export const blogPosts = mysqlTable("blog_posts", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 500 }).notNull(),
+  author: varchar("author", { length: 255 }).notNull(),
+  authorAvatar: varchar("authorAvatar", { length: 500 }),
+  authorCompany: varchar("authorCompany", { length: 255 }),
+  description: text("description"),
+  content: text("content").notNull(), // Markdown content
+  tags: text("tags"), // JSON array stored as text
+  publishedAt: timestamp("publishedAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = typeof blogPosts.$inferInsert;

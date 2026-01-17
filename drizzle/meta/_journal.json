@@ -15,6 +15,13 @@
       "when": 1765687614207,
       "tag": "0001_hard_loki",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1768608176749,
+      "tag": "0002_messy_jasper_sitwell",
+      "breakpoints": true
     }
   ]
 }
