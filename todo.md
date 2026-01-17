@@ -151,3 +151,9 @@
 ## Blog Filtering and Avatar Fix
 - [x] Wire up topic tiles to filter blog posts by tags
 - [x] Fix broken avatar icon on blog pages
+
+## Update Blog Filters and Add Media Support
+- [x] Update topic tiles to new categories (AI and Automation, Local Hosting, Beginner Guides, Intermediate Guides, Case Studies, Sovereign AI, Free)
+- [x] Add image upload functionality to admin panel
+- [x] Add video embed support to blog posts (YouTube, Vimeo, etc.)
+- [x] Update existing blog post tags to match new categories

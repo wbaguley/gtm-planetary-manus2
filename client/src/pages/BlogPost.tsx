@@ -164,6 +164,51 @@ export default function BlogPost() {
                   {children}
                 </li>
               ),
+              a: ({ href, children }: any) => {
+                // Auto-embed YouTube and Vimeo videos
+                if (href) {
+                  const youtubeMatch = href.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+                  const vimeoMatch = href.match(/vimeo\.com\/(\d+)/);
+                  
+                  if (youtubeMatch) {
+                    return (
+                      <div className="my-8 aspect-video rounded-lg overflow-hidden border border-border">
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
+                          title="YouTube video"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                    );
+                  }
+                  
+                  if (vimeoMatch) {
+                    return (
+                      <div className="my-8 aspect-video rounded-lg overflow-hidden border border-border">
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={`https://player.vimeo.com/video/${vimeoMatch[1]}`}
+                          title="Vimeo video"
+                          frameBorder="0"
+                          allow="autoplay; fullscreen; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                    );
+                  }
+                }
+                
+                return (
+                  <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                    {children}
+                  </a>
+                );
+              },
               code: ({ inline, className, children, ...props }: any) => {
                 const match = /language-(\w+)/.exec(className || '');
                 const codeString = String(children).replace(/\n$/, '');

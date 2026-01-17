@@ -5,14 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 
-// Topic categories with gradient colors (OpenAI Cookbook style)
+// Topic categories with gradient colors
 const topics = [
-  { name: "HVAC", gradient: "from-orange-400 via-red-400 to-pink-400" },
-  { name: "Dental", gradient: "from-blue-400 via-purple-400 to-pink-400" },
-  { name: "Electrical", gradient: "from-green-400 via-emerald-400 to-teal-400" },
-  { name: "Plumbing", gradient: "from-purple-400 via-violet-400 to-indigo-400" },
-  { name: "AI Automation", gradient: "from-orange-500 via-amber-500 to-yellow-400" },
-  { name: "Case Studies", gradient: "from-cyan-400 via-blue-400 to-indigo-500" },
+  { name: "AI and Automation", gradient: "from-purple-500 via-violet-500 to-purple-600" },
+  { name: "Local Hosting", gradient: "from-green-500 via-emerald-500 to-teal-600" },
+  { name: "Beginner Guides", gradient: "from-cyan-400 via-blue-400 to-indigo-500" },
+  { name: "Intermediate Guides", gradient: "from-orange-500 via-amber-500 to-yellow-500" },
+  { name: "Case Studies", gradient: "from-pink-500 via-rose-500 to-red-500" },
+  { name: "Sovereign AI", gradient: "from-violet-600 via-purple-600 to-fuchsia-600" },
+  { name: "Free", gradient: "from-emerald-400 via-green-400 to-lime-500" },
 ];
 
 export default function Blog() {

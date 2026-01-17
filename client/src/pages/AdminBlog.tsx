@@ -23,6 +23,7 @@ export function AdminBlog() {
   const [content, setContent] = useState("");
   const [tags, setTags] = useState("");
   const [publishedAt, setPublishedAt] = useState(new Date().toISOString().split('T')[0]);
+  const [uploading, setUploading] = useState(false);
 
   const { data: posts, refetch } = trpc.blog.list.useQuery();
   const createMutation = trpc.blog.create.useMutation();
@@ -123,6 +124,57 @@ export function AdminBlog() {
       toast.success("Markdown file loaded!");
     };
     reader.readAsText(file);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target?.result as string;
+        
+        // Upload to storage
+        const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            image: base64,
+            filename: file.name 
+          }),
+        });
+
+        if (!response.ok) throw new Error('Upload failed');
+        
+        const { url } = await response.json();
+        
+        // Insert markdown image syntax at cursor position
+        const imageMarkdown = `\n![${file.name}](${url})\n`;
+        setContent(prev => prev + imageMarkdown);
+        
+        toast.success('Image uploaded successfully!');
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to upload image');
+      setUploading(false);
+    }
   };
 
   const generateSlug = (text: string) => {
@@ -233,14 +285,31 @@ export function AdminBlog() {
 
               <div>
                 <label className="block text-sm font-medium mb-2">Content (Markdown) *</label>
-                <div className="mb-2">
-                  <input
-                    type="file"
-                    accept=".md,.markdown"
-                    onChange={handleFileUpload}
-                    className="text-sm text-muted-foreground"
-                  />
+                <div className="mb-2 flex gap-4">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Load Markdown File</label>
+                    <input
+                      type="file"
+                      accept=".md,.markdown"
+                      onChange={handleFileUpload}
+                      className="block text-sm text-muted-foreground"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Upload Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                      className="block text-sm text-muted-foreground"
+                    />
+                    {uploading && <p className="text-xs text-muted-foreground mt-1">Uploading...</p>}
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Tip: Upload images to insert them into your content. For videos, paste YouTube/Vimeo embed codes directly.
+                </p>
                 <Textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
