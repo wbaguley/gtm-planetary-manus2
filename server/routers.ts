@@ -103,6 +103,31 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
+
+  newsletter: router({
+    subscribe: publicProcedure
+      .input(z.object({ email: z.string().email("Invalid email address") }))
+      .mutation(async ({ input }) => {
+        const { createNewsletterSubscription, checkNewsletterSubscription } = await import("./db");
+        
+        // Check if already subscribed
+        const isSubscribed = await checkNewsletterSubscription(input.email);
+        if (isSubscribed) {
+          return { success: true, message: "You're already subscribed!" };
+        }
+        
+        // Create subscription
+        await createNewsletterSubscription(input.email);
+        
+        // Notify owner
+        await notifyOwner({
+          title: "New Newsletter Subscription",
+          content: `Email: ${input.email}`,
+        });
+        
+        return { success: true, message: "Successfully subscribed!" };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

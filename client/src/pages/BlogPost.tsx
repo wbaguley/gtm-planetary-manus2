@@ -43,6 +43,38 @@ export default function BlogPost() {
     );
   }
 
+  // Generate structured data for SEO
+  const structuredData = post ? {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "description": post.description || "",
+    "author": {
+      "@type": "Person",
+      "name": post.author,
+      "jobTitle": "AI Automation Specialist",
+      "worksFor": {
+        "@type": "Organization",
+        "name": post.authorCompany || "GTM Planetary"
+      }
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "GTM Planetary",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://app.gtmplanetary.com/logo.png"
+      }
+    },
+    "datePublished": new Date(post.publishedAt).toISOString(),
+    "dateModified": new Date(post.updatedAt).toISOString(),
+    "keywords": post.tags || "",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://app.gtmplanetary.com/blog/${post.slug}`
+    }
+  } : null;
+
   if (!post) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -58,6 +90,13 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Structured Data for SEO */}
+      {structuredData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      )}
       {/* Header */}
       <header className="border-b border-border">
         <div className="container py-6">

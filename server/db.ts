@@ -1,6 +1,6 @@
 import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, contactSubmissions, InsertContactSubmission, blogPosts, InsertBlogPost, BlogPost } from "../drizzle/schema";
+import { InsertUser, users, contactSubmissions, InsertContactSubmission, blogPosts, InsertBlogPost, BlogPost, newsletterSubscriptions, InsertNewsletterSubscription, NewsletterSubscription } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -177,5 +177,37 @@ export async function deleteBlogPost(id: number) {
   } catch (error) {
     console.error("[Database] Failed to delete blog post:", error);
     throw error;
+  }
+}
+
+// Newsletter subscription helpers
+export async function createNewsletterSubscription(email: string): Promise<NewsletterSubscription> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  
+  try {
+    const result = await db.insert(newsletterSubscriptions).values({ email });
+    const inserted = await db.select().from(newsletterSubscriptions).where(eq(newsletterSubscriptions.email, email)).limit(1);
+    return inserted[0];
+  } catch (error) {
+    console.error("[Database] Failed to create newsletter subscription:", error);
+    throw error;
+  }
+}
+
+export async function checkNewsletterSubscription(email: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    return false;
+  }
+  
+  try {
+    const result = await db.select().from(newsletterSubscriptions).where(eq(newsletterSubscriptions.email, email)).limit(1);
+    return result.length > 0 && result[0].isActive === 1;
+  } catch (error) {
+    console.error("[Database] Failed to check newsletter subscription:", error);
+    return false;
   }
 }

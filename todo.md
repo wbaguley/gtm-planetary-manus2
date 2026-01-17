@@ -157,3 +157,13 @@
 - [x] Add image upload functionality to admin panel
 - [x] Add video embed support to blog posts (YouTube, Vimeo, etc.)
 - [x] Update existing blog post tags to match new categories
+
+## Update Topic Tile Name
+- [ ] Change "Free" to "Free Stuff" in Blog.tsx
+
+## Blog Enhancements
+- [x] Change "Free" to "Free Stuff" in topic tiles
+- [x] Create database schema for newsletter subscriptions
+- [x] Add tRPC procedures for newsletter subscription
+- [x] Build newsletter subscription widget UI for blog
+- [x] Add structured data (JSON-LD) to blog posts for SEO

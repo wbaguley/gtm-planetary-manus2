@@ -13,7 +13,7 @@ const topics = [
   { name: "Intermediate Guides", gradient: "from-orange-500 via-amber-500 to-yellow-500" },
   { name: "Case Studies", gradient: "from-pink-500 via-rose-500 to-red-500" },
   { name: "Sovereign AI", gradient: "from-violet-600 via-purple-600 to-fuchsia-600" },
-  { name: "Free", gradient: "from-emerald-400 via-green-400 to-lime-500" },
+  { name: "Free Stuff", gradient: "from-emerald-400 via-green-400 to-lime-500" },
 ];
 
 export default function Blog() {
@@ -194,7 +194,95 @@ export default function Blog() {
             </div>
           )}
         </div>
+
+        {/* Newsletter Subscription Widget */}
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+            <CardContent className="p-8">
+              <div className="text-center mb-6">
+                <h3 className="font-orbitron text-2xl font-bold mb-2">Stay Updated</h3>
+                <p className="text-muted-foreground">
+                  Get the latest AI automation insights, guides, and case studies delivered to your inbox.
+                </p>
+              </div>
+              <NewsletterForm />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
+  );
+}
+
+function NewsletterForm() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+  
+  const subscribeMutation = trpc.newsletter.subscribe.useMutation({
+    onSuccess: (data) => {
+      setStatus("success");
+      setMessage(data.message || "Successfully subscribed!");
+      setEmail("");
+    },
+    onError: (error) => {
+      setStatus("error");
+      setMessage(error.message || "Failed to subscribe. Please try again.");
+    },
+  });
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    
+    setStatus("loading");
+    subscribeMutation.mutate({ email });
+  };
+  
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex gap-2">
+        <Input
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={status === "loading"}
+          className="flex-1"
+          required
+        />
+        <Button
+          type="submit"
+          disabled={status === "loading" || !email}
+          className="px-6"
+        >
+          {status === "loading" ? (
+            <>
+              <i className="fas fa-spinner fa-spin mr-2"></i>
+              Subscribing...
+            </>
+          ) : (
+            <>
+              <i className="fas fa-envelope mr-2"></i>
+              Subscribe
+            </>
+          )}
+        </Button>
+      </div>
+      
+      {status === "success" && (
+        <div className="flex items-center gap-2 text-green-500 text-sm">
+          <i className="fas fa-check-circle"></i>
+          <span>{message}</span>
+        </div>
+      )}
+      
+      {status === "error" && (
+        <div className="flex items-center gap-2 text-red-500 text-sm">
+          <i className="fas fa-exclamation-circle"></i>
+          <span>{message}</span>
+        </div>
+      )}
+    </form>
   );
 }
