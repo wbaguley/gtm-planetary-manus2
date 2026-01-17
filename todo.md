@@ -180,3 +180,7 @@
 ## Add Hidden Login Link
 - [x] Add subtle login link to footer (hard to see)
 - [x] Improve AdminBlog to show login button instead of blank page
+
+## Add Logout Functionality
+- [x] Add logout button to admin blog header
+- [x] Test logout functionality

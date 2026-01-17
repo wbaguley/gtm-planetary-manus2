@@ -10,7 +10,7 @@ import { Link, useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
 
 export function AdminBlog() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [showForm, setShowForm] = useState(false);
   const [editingPost, setEditingPost] = useState<any>(null);
@@ -219,6 +219,16 @@ export function AdminBlog() {
             </Link>
             <Button onClick={() => setShowForm(!showForm)}>
               {showForm ? "Cancel" : "New Post"}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={async () => {
+                await logout();
+                setLocation('/');
+                toast.success('Logged out successfully');
+              }}
+            >
+              Logout
             </Button>
           </div>
         </div>
