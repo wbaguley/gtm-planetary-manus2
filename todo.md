@@ -147,3 +147,7 @@
 - [x] Update Blog.tsx to fetch posts from database
 - [x] Update BlogPost.tsx to fetch content from database
 - [x] Test complete admin workflow
+
+## Blog Filtering and Avatar Fix
+- [x] Wire up topic tiles to filter blog posts by tags
+- [x] Fix broken avatar icon on blog pages

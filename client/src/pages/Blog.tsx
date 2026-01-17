@@ -17,15 +17,24 @@ const topics = [
 
 export default function Blog() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [visiblePosts, setVisiblePosts] = useState(6);
   
   const { data: blogPosts, isLoading } = trpc.blog.list.useQuery();
 
-  const filteredPosts = (blogPosts || []).filter((post) =>
-    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (post.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (post.tags || "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPosts = (blogPosts || []).filter((post) => {
+    // Filter by search query
+    const matchesSearch = searchQuery === "" ||
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (post.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (post.tags || "").toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Filter by selected topic
+    const matchesTopic = selectedTopic === null ||
+      (post.tags || "").toLowerCase().includes(selectedTopic.toLowerCase());
+    
+    return matchesSearch && matchesTopic;
+  });
 
   const displayedPosts = filteredPosts.slice(0, visiblePosts);
   const hasMore = visiblePosts < filteredPosts.length;
@@ -56,14 +65,42 @@ export default function Blog() {
 
         {/* Topic Tiles */}
         <div className="mb-16">
-          <h2 className="font-orbitron text-3xl font-bold mb-8">Topics</h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="font-orbitron text-3xl font-bold">Topics</h2>
+            {selectedTopic && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedTopic(null);
+                  setVisiblePosts(6);
+                }}
+              >
+                <i className="fas fa-times mr-2"></i>
+                Clear Filter
+              </Button>
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {topics.map((topic) => (
               <div
                 key={topic.name}
-                className={`relative h-32 rounded-lg bg-gradient-to-br ${topic.gradient} overflow-hidden group cursor-pointer transition-transform hover:scale-105`}
+                onClick={() => {
+                  if (selectedTopic === topic.name) {
+                    setSelectedTopic(null); // Deselect if clicking the same topic
+                  } else {
+                    setSelectedTopic(topic.name);
+                    setSearchQuery(""); // Clear search when selecting topic
+                  }
+                  setVisiblePosts(6); // Reset pagination
+                }}
+                className={`relative h-32 rounded-lg bg-gradient-to-br ${topic.gradient} overflow-hidden group cursor-pointer transition-all hover:scale-105 ${
+                  selectedTopic === topic.name ? 'ring-4 ring-white scale-105' : ''
+                }`}
               >
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                <div className={`absolute inset-0 transition-colors ${
+                  selectedTopic === topic.name ? 'bg-black/10' : 'bg-black/20 group-hover:bg-black/10'
+                }`} />
                 <div className="relative h-full flex items-center justify-center">
                   <h3 className="font-orbitron text-2xl font-bold text-white drop-shadow-lg">
                     {topic.name}
