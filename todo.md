@@ -167,3 +167,8 @@
 - [x] Add tRPC procedures for newsletter subscription
 - [x] Build newsletter subscription widget UI for blog
 - [x] Add structured data (JSON-LD) to blog posts for SEO
+
+## Fix Admin Page Redirect Issue
+- [x] Diagnose why /admin/blog redirects to main page
+- [x] Fix routing or authentication problem
+- [x] Test admin page access
