@@ -254,3 +254,9 @@
 - [x] Debug why Canvas 2D particles don't render on published site
 - [x] Fix rendering issue
 - [x] Test and verify fix
+
+## Redesign Particle Morph Shapes
+- [x] Hero: Make shapes clearly recognizable as trade tools morphing to AI (hammer, gear → brain, neural net, DNA, sphere)
+- [x] Pain Points: Create 8 unique shapes matching each pain point item
+- [x] Pain point shapes morph as user scrolls through each item
+- [x] Test visual quality and recognizability

@@ -1,88 +1,231 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react';
 
-// ─── Shape Generators ──────────────────────────────────────────────
-// Each returns [x, y, z] arrays for N particles
-
-function spherePositions(n: number, r: number): Float32Array {
+// ─── Utility: fill outline of a 2D path with particles ─────────────
+// Distributes particles along line segments with thickness for visibility
+function fillPath2D(
+  n: number,
+  segments: { x1: number; y1: number; x2: number; y2: number }[],
+  thickness: number = 0.06,
+  zSpread: number = 0.25
+): Float32Array {
   const p = new Float32Array(n * 3);
+  // Calculate total length for proportional distribution
+  const lengths = segments.map(s => Math.sqrt((s.x2 - s.x1) ** 2 + (s.y2 - s.y1) ** 2));
+  const totalLen = lengths.reduce((a, b) => a + b, 0);
   for (let i = 0; i < n; i++) {
-    const phi = Math.acos(-1 + (2 * i) / n);
-    const theta = Math.sqrt(n * Math.PI) * phi;
-    p[i * 3] = Math.sin(phi) * Math.cos(theta) * r;
-    p[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * r;
-    p[i * 3 + 2] = Math.cos(phi) * r;
+    // Pick a random point along the total path
+    let t = Math.random() * totalLen;
+    let segIdx = 0;
+    while (segIdx < lengths.length - 1 && t > lengths[segIdx]) {
+      t -= lengths[segIdx];
+      segIdx++;
+    }
+    const seg = segments[segIdx];
+    const frac = lengths[segIdx] > 0 ? t / lengths[segIdx] : 0;
+    const x = seg.x1 + (seg.x2 - seg.x1) * frac + (Math.random() - 0.5) * thickness;
+    const y = seg.y1 + (seg.y2 - seg.y1) * frac + (Math.random() - 0.5) * thickness;
+    const z = (Math.random() - 0.5) * zSpread;
+    p[i * 3] = x;
+    p[i * 3 + 1] = y;
+    p[i * 3 + 2] = z;
   }
   return p;
 }
 
-function wrenchPositions(n: number): Float32Array {
+// Fill a circle arc with particles
+function fillArc(
+  p: Float32Array, startIdx: number, count: number,
+  cx: number, cy: number, r: number,
+  startAngle: number, endAngle: number,
+  thickness: number = 0.06, zSpread: number = 0.25
+) {
+  for (let i = 0; i < count; i++) {
+    const angle = startAngle + Math.random() * (endAngle - startAngle);
+    const rr = r + (Math.random() - 0.5) * thickness;
+    const idx = (startIdx + i) * 3;
+    p[idx] = cx + Math.cos(angle) * rr;
+    p[idx + 1] = cy + Math.sin(angle) * rr;
+    p[idx + 2] = (Math.random() - 0.5) * zSpread;
+  }
+}
+
+// Fill a filled circle area
+function fillDisk(
+  p: Float32Array, startIdx: number, count: number,
+  cx: number, cy: number, r: number, zSpread: number = 0.25
+) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const rr = Math.sqrt(Math.random()) * r;
+    const idx = (startIdx + i) * 3;
+    p[idx] = cx + Math.cos(angle) * rr;
+    p[idx + 1] = cy + Math.sin(angle) * rr;
+    p[idx + 2] = (Math.random() - 0.5) * zSpread;
+  }
+}
+
+// ─── HERO Shape Generators ──────────────────────────────────────────
+
+// 1. HAMMER - clear trade tool silhouette
+function hammerPositions(n: number): Float32Array {
   const p = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    const s = Math.random();
-    if (s < 0.35) {
-      // Open jaw head
-      const a = Math.random() * Math.PI * 1.5 + Math.PI * 0.25;
-      const r = 0.8 + Math.random() * 0.4;
-      p[i * 3] = Math.cos(a) * r;
-      p[i * 3 + 1] = 1.2 + Math.sin(a) * r;
-      p[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
-    } else if (s < 0.7) {
-      // Handle shaft
-      p[i * 3] = (Math.random() - 0.5) * 0.25;
-      p[i * 3 + 1] = (Math.random() - 0.5) * 2.4;
-      p[i * 3 + 2] = (Math.random() - 0.5) * 0.25;
+  const headCount = Math.floor(n * 0.45);
+  const handleCount = n - headCount;
+  
+  // Hammer head - rectangular block at top
+  for (let i = 0; i < headCount; i++) {
+    const section = Math.random();
+    if (section < 0.7) {
+      // Main head block
+      p[i * 3] = (Math.random() - 0.5) * 1.8;
+      p[i * 3 + 1] = 0.8 + (Math.random() - 0.5) * 0.7;
+      p[i * 3 + 2] = (Math.random() - 0.5) * 0.5;
     } else {
-      // Bottom jaw
-      const a = Math.random() * Math.PI * 1.2 - Math.PI * 0.6;
-      const r = 0.5 + Math.random() * 0.3;
-      p[i * 3] = Math.cos(a) * r;
-      p[i * 3 + 1] = -1.2 + Math.sin(a) * r;
+      // Claw fork on one side
+      const clawAngle = Math.random() * 0.6 + 0.2;
+      p[i * 3] = -0.9 - Math.random() * 0.4;
+      p[i * 3 + 1] = 0.8 + Math.sin(clawAngle * Math.PI) * 0.5;
+      p[i * 3 + 2] = (Math.random() - 0.5) * 0.3 + (Math.random() > 0.5 ? 0.15 : -0.15);
+    }
+  }
+  
+  // Handle - long shaft going down
+  for (let i = 0; i < handleCount; i++) {
+    const idx = headCount + i;
+    p[idx * 3] = (Math.random() - 0.5) * 0.2;
+    p[idx * 3 + 1] = 0.4 - Math.random() * 2.4;
+    p[idx * 3 + 2] = (Math.random() - 0.5) * 0.2;
+  }
+  return p;
+}
+
+// 2. GEAR/COG - mechanical transition
+function gearPositions(n: number): Float32Array {
+  const p = new Float32Array(n * 3);
+  const outerR = 1.4;
+  const innerR = 0.9;
+  const teeth = 10;
+  const toothH = 0.35;
+  
+  for (let i = 0; i < n; i++) {
+    const section = Math.random();
+    if (section < 0.15) {
+      // Center hole
+      const angle = Math.random() * Math.PI * 2;
+      const r = 0.25 + (Math.random() - 0.5) * 0.08;
+      p[i * 3] = Math.cos(angle) * r;
+      p[i * 3 + 1] = Math.sin(angle) * r;
+      p[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
+    } else if (section < 0.55) {
+      // Outer ring with teeth
+      const angle = Math.random() * Math.PI * 2;
+      const toothPhase = (angle / (Math.PI * 2)) * teeth;
+      const inTooth = (toothPhase % 1) < 0.45;
+      const r = inTooth ? outerR + toothH * Math.random() : outerR;
+      p[i * 3] = Math.cos(angle) * (r + (Math.random() - 0.5) * 0.08);
+      p[i * 3 + 1] = Math.sin(angle) * (r + (Math.random() - 0.5) * 0.08);
+      p[i * 3 + 2] = (Math.random() - 0.5) * 0.35;
+    } else {
+      // Inner body fill
+      const angle = Math.random() * Math.PI * 2;
+      const r = innerR * (0.35 + Math.random() * 0.65);
+      p[i * 3] = Math.cos(angle) * r;
+      p[i * 3 + 1] = Math.sin(angle) * r;
       p[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
     }
   }
   return p;
 }
 
+// 3. BRAIN - AI intelligence (improved for clarity)
 function brainPositions(n: number): Float32Array {
   const p = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
-    const h = Math.random() > 0.5 ? 1 : -1;
-    const phi = Math.acos(-1 + 2 * Math.random());
-    const theta = Math.random() * Math.PI * 2;
-    const r = 1.2 + Math.sin(theta * 6) * 0.15 + Math.sin(phi * 8) * 0.1;
-    p[i * 3] = Math.sin(phi) * Math.cos(theta) * r * 0.6 + h * 0.3;
-    p[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * r * 0.8;
-    p[i * 3 + 2] = Math.cos(phi) * r * 0.7;
-  }
-  return p;
-}
-
-function circuitPositions(n: number): Float32Array {
-  const p = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    const t = Math.random();
-    if (t < 0.4) {
-      const axis = Math.floor(Math.random() * 3);
-      const line = (Math.floor(Math.random() * 8) - 4) * 0.35;
-      const v = (Math.random() - 0.5) * 2.8;
-      if (axis === 0) { p[i*3]=v; p[i*3+1]=line; p[i*3+2]=(Math.random()-0.5)*0.1; }
-      else if (axis === 1) { p[i*3]=line; p[i*3+1]=v; p[i*3+2]=(Math.random()-0.5)*0.1; }
-      else { p[i*3]=(Math.random()-0.5)*0.1; p[i*3+1]=line; p[i*3+2]=v; }
-    } else if (t < 0.7) {
-      const x = (Math.floor(Math.random()*8)-4)*0.35;
-      const y = (Math.floor(Math.random()*8)-4)*0.35;
-      p[i*3]=x+(Math.random()-0.5)*0.08;
-      p[i*3+1]=y+(Math.random()-0.5)*0.08;
-      p[i*3+2]=(Math.random()-0.5)*0.08;
+    const side = Math.random() > 0.5 ? 1 : -1;
+    const section = Math.random();
+    
+    if (section < 0.6) {
+      // Brain hemispheres - two bumpy lobes
+      const phi = Math.acos(-1 + 2 * Math.random());
+      const theta = Math.random() * Math.PI * 2;
+      const baseR = 1.1;
+      const bumps = Math.sin(theta * 5) * 0.12 + Math.sin(phi * 7) * 0.08;
+      const r = baseR + bumps;
+      p[i * 3] = Math.sin(phi) * Math.cos(theta) * r * 0.55 + side * 0.35;
+      p[i * 3 + 1] = Math.cos(phi) * r * 0.7 + 0.1;
+      p[i * 3 + 2] = Math.sin(phi) * Math.sin(theta) * r * 0.6;
+    } else if (section < 0.75) {
+      // Central fissure (dividing line)
+      p[i * 3] = (Math.random() - 0.5) * 0.06;
+      p[i * 3 + 1] = (Math.random() - 0.3) * 1.4;
+      p[i * 3 + 2] = (Math.random() - 0.5) * 0.8;
+    } else if (section < 0.9) {
+      // Brain stem
+      p[i * 3] = (Math.random() - 0.5) * 0.25;
+      p[i * 3 + 1] = -0.8 - Math.random() * 0.6;
+      p[i * 3 + 2] = (Math.random() - 0.5) * 0.25;
     } else {
-      const a = Math.random()*Math.PI*2;
-      const r = Math.random()*0.5;
-      p[i*3]=Math.cos(a)*r; p[i*3+1]=Math.sin(a)*r; p[i*3+2]=(Math.random()-0.5)*0.3;
+      // Wrinkle ridges on surface
+      const ridge = Math.floor(Math.random() * 6);
+      const t = Math.random();
+      const angle = (ridge / 6) * Math.PI + t * 0.3;
+      const r = 0.9 + Math.sin(t * 10) * 0.05;
+      p[i * 3] = Math.cos(angle) * r * 0.5 + side * 0.2;
+      p[i * 3 + 1] = (t - 0.5) * 1.2 + 0.1;
+      p[i * 3 + 2] = Math.sin(angle) * r * 0.5;
     }
   }
   return p;
 }
 
+// 4. NEURAL NETWORK - connected nodes with visible connections
+function neuralNetPositions(n: number): Float32Array {
+  const p = new Float32Array(n * 3);
+  // Create node positions in layers
+  const layers = [
+    [-1.2, [-0.9, -0.3, 0.3, 0.9]],
+    [-0.4, [-1.1, -0.5, 0.0, 0.5, 1.1]],
+    [0.4, [-1.1, -0.5, 0.0, 0.5, 1.1]],
+    [1.2, [-0.9, -0.3, 0.3, 0.9]],
+  ] as [number, number[]][];
+  
+  const allNodes: [number, number][] = [];
+  for (const [x, ys] of layers) {
+    for (const y of ys) {
+      allNodes.push([x, y]);
+    }
+  }
+  
+  const nodeCount = Math.floor(n * 0.35);
+  const connectionCount = n - nodeCount;
+  
+  // Nodes - dense clusters
+  for (let i = 0; i < nodeCount; i++) {
+    const node = allNodes[Math.floor(Math.random() * allNodes.length)];
+    const angle = Math.random() * Math.PI * 2;
+    const r = Math.sqrt(Math.random()) * 0.15;
+    p[i * 3] = node[0] + Math.cos(angle) * r;
+    p[i * 3 + 1] = node[1] + Math.sin(angle) * r;
+    p[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
+  }
+  
+  // Connections between layers
+  for (let i = 0; i < connectionCount; i++) {
+    const idx = nodeCount + i;
+    const layerIdx = Math.floor(Math.random() * (layers.length - 1));
+    const [x1, ys1] = layers[layerIdx];
+    const [x2, ys2] = layers[layerIdx + 1];
+    const y1 = ys1[Math.floor(Math.random() * ys1.length)];
+    const y2 = ys2[Math.floor(Math.random() * ys2.length)];
+    const t = Math.random();
+    p[idx * 3] = x1 + (x2 - x1) * t + (Math.random() - 0.5) * 0.03;
+    p[idx * 3 + 1] = y1 + (y2 - y1) * t + (Math.random() - 0.5) * 0.03;
+    p[idx * 3 + 2] = (Math.random() - 0.5) * 0.15;
+  }
+  return p;
+}
+
+// 5. DNA Helix - advanced AI
 function dnaPositions(n: number): Float32Array {
   const p = new Float32Array(n * 3);
   const height = 3, radius = 0.8, turns = 3;
@@ -107,72 +250,384 @@ function dnaPositions(n: number): Float32Array {
   return p;
 }
 
-function torusPositions(n: number, R: number, r: number): Float32Array {
+// 6. Glowing Sphere - fully evolved AI
+function spherePositions(n: number, r: number): Float32Array {
   const p = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
-    const u = (i/n)*Math.PI*2*20;
-    const v = Math.random()*Math.PI*2;
-    p[i*3]=(R+r*Math.cos(v))*Math.cos(u);
-    p[i*3+1]=(R+r*Math.cos(v))*Math.sin(u);
-    p[i*3+2]=r*Math.sin(v);
+    const phi = Math.acos(-1 + (2 * i) / n);
+    const theta = Math.sqrt(n * Math.PI) * phi;
+    p[i * 3] = Math.sin(phi) * Math.cos(theta) * r;
+    p[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * r;
+    p[i * 3 + 2] = Math.cos(phi) * r;
   }
   return p;
 }
 
-// Pain point shapes
-function scatteredPositions(n: number): Float32Array {
-  const p = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    p[i*3]=(Math.random()-0.5)*4;
-    p[i*3+1]=(Math.random()-0.5)*4;
-    p[i*3+2]=(Math.random()-0.5)*4;
-  }
-  return p;
-}
 
-function brokenCubePositions(n: number): Float32Array {
-  const p = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    const face = Math.floor(Math.random()*6);
-    const off = (Math.random()-0.5)*0.3;
-    const u = (Math.random()-0.5)*1.8, v = (Math.random()-0.5)*1.8;
-    switch(face) {
-      case 0: p[i*3]=1+off; p[i*3+1]=u; p[i*3+2]=v; break;
-      case 1: p[i*3]=-1-off; p[i*3+1]=u; p[i*3+2]=v; break;
-      case 2: p[i*3]=u; p[i*3+1]=1+off; p[i*3+2]=v; break;
-      case 3: p[i*3]=u; p[i*3+1]=-1-off; p[i*3+2]=v; break;
-      case 4: p[i*3]=u; p[i*3+1]=v; p[i*3+2]=1+off; break;
-      case 5: p[i*3]=u; p[i*3+1]=v; p[i*3+2]=-1-off; break;
-    }
-  }
-  return p;
-}
+// ─── PAIN POINT Shape Generators (8 shapes, one per pain point) ────
 
-function networkPositions(n: number): Float32Array {
+// 1. Job Management Chaos - scattered calendar/clock fragments
+function chaosClockPositions(n: number): Float32Array {
   const p = new Float32Array(n * 3);
-  const nodes: [number,number,number][] = [];
-  for (let i = 0; i < 30; i++) {
-    const phi = Math.acos(-1+(2*i)/30);
-    const theta = Math.sqrt(30*Math.PI)*phi;
-    nodes.push([Math.sin(phi)*Math.cos(theta)*1.5, Math.sin(phi)*Math.sin(theta)*1.5, Math.cos(phi)*1.5]);
-  }
-  for (let i = 0; i < n; i++) {
-    if (Math.random() < 0.4) {
-      const nd = nodes[Math.floor(Math.random()*nodes.length)];
-      p[i*3]=nd[0]+(Math.random()-0.5)*0.15;
-      p[i*3+1]=nd[1]+(Math.random()-0.5)*0.15;
-      p[i*3+2]=nd[2]+(Math.random()-0.5)*0.15;
+  const clockCount = Math.floor(n * 0.4);
+  const debrisCount = n - clockCount;
+  
+  // Broken clock face
+  for (let i = 0; i < clockCount; i++) {
+    const section = Math.random();
+    if (section < 0.4) {
+      // Clock circle outline (broken)
+      const angle = Math.random() * Math.PI * 2;
+      if (Math.sin(angle * 3) > -0.3) { // gaps in the circle
+        const r = 1.2 + (Math.random() - 0.5) * 0.08;
+        p[i * 3] = Math.cos(angle) * r;
+        p[i * 3 + 1] = Math.sin(angle) * r;
+      }
+    } else if (section < 0.6) {
+      // Clock hands (broken, at odd angles)
+      const hand = Math.random() > 0.5 ? 0.7 : 1.0;
+      const angle = Math.random() > 0.5 ? 2.1 : 4.5; // two hands
+      const t = Math.random() * hand;
+      p[i * 3] = Math.cos(angle) * t + (Math.random() - 0.5) * 0.04;
+      p[i * 3 + 1] = Math.sin(angle) * t + (Math.random() - 0.5) * 0.04;
     } else {
-      const n1 = nodes[Math.floor(Math.random()*nodes.length)];
-      const n2 = nodes[Math.floor(Math.random()*nodes.length)];
-      const t = Math.random();
-      p[i*3]=n1[0]+(n2[0]-n1[0])*t+(Math.random()-0.5)*0.03;
-      p[i*3+1]=n1[1]+(n2[1]-n1[1])*t+(Math.random()-0.5)*0.03;
-      p[i*3+2]=n1[2]+(n2[2]-n1[2])*t+(Math.random()-0.5)*0.03;
+      // Hour markers
+      const hour = Math.floor(Math.random() * 12);
+      const angle = (hour / 12) * Math.PI * 2 - Math.PI / 2;
+      p[i * 3] = Math.cos(angle) * 1.0 + (Math.random() - 0.5) * 0.1;
+      p[i * 3 + 1] = Math.sin(angle) * 1.0 + (Math.random() - 0.5) * 0.1;
     }
+    p[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
+  }
+  
+  // Scattered debris flying outward
+  for (let i = 0; i < debrisCount; i++) {
+    const idx = clockCount + i;
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 1.5 + Math.random() * 1.5;
+    p[idx * 3] = Math.cos(angle) * dist + (Math.random() - 0.5) * 0.3;
+    p[idx * 3 + 1] = Math.sin(angle) * dist + (Math.random() - 0.5) * 0.3;
+    p[idx * 3 + 2] = (Math.random() - 0.5) * 1.5;
   }
   return p;
 }
+
+// 2. System Overload - tangled chain links / broken connections
+function tangledSystemPositions(n: number): Float32Array {
+  const p = new Float32Array(n * 3);
+  const numChains = 6;
+  
+  for (let i = 0; i < n; i++) {
+    const chain = Math.floor(Math.random() * numChains);
+    const t = Math.random();
+    
+    // Each chain is a tangled curve
+    const baseAngle = (chain / numChains) * Math.PI * 2;
+    const wobble = Math.sin(t * 8 + chain * 2) * 0.5;
+    const r = 0.3 + t * 1.2;
+    
+    p[i * 3] = Math.cos(baseAngle + t * 3 + wobble) * r + (Math.random() - 0.5) * 0.08;
+    p[i * 3 + 1] = Math.sin(baseAngle + t * 3 + wobble) * r + (Math.random() - 0.5) * 0.08;
+    p[i * 3 + 2] = Math.sin(t * 5 + chain) * 0.6 + (Math.random() - 0.5) * 0.15;
+  }
+  return p;
+}
+
+// 3. Cash Flow Crunch - dollar sign crumbling/breaking apart
+function dollarSignPositions(n: number): Float32Array {
+  const p = new Float32Array(n * 3);
+  const signCount = Math.floor(n * 0.6);
+  const crumbleCount = n - signCount;
+  
+  // Dollar sign shape
+  for (let i = 0; i < signCount; i++) {
+    const section = Math.random();
+    if (section < 0.35) {
+      // Top S-curve
+      const t = Math.random() * Math.PI;
+      const r = 0.7;
+      p[i * 3] = Math.cos(t + Math.PI) * r + (Math.random() - 0.5) * 0.06;
+      p[i * 3 + 1] = Math.sin(t) * 0.4 + 0.5 + (Math.random() - 0.5) * 0.06;
+    } else if (section < 0.7) {
+      // Bottom S-curve (reversed)
+      const t = Math.random() * Math.PI;
+      const r = 0.7;
+      p[i * 3] = Math.cos(t) * r + (Math.random() - 0.5) * 0.06;
+      p[i * 3 + 1] = Math.sin(t + Math.PI) * 0.4 - 0.5 + (Math.random() - 0.5) * 0.06;
+    } else {
+      // Vertical line through center
+      p[i * 3] = (Math.random() - 0.5) * 0.06;
+      p[i * 3 + 1] = (Math.random() - 0.5) * 2.2;
+    }
+    p[i * 3 + 2] = (Math.random() - 0.5) * 0.25;
+  }
+  
+  // Crumbling pieces falling away
+  for (let i = 0; i < crumbleCount; i++) {
+    const idx = signCount + i;
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 1.0 + Math.random() * 1.2;
+    const fall = -Math.random() * 1.5; // falling downward
+    p[idx * 3] = Math.cos(angle) * dist * 0.6 + (Math.random() - 0.5) * 0.2;
+    p[idx * 3 + 1] = fall + (Math.random() - 0.5) * 0.5;
+    p[idx * 3 + 2] = Math.sin(angle) * dist * 0.4 + (Math.random() - 0.5) * 0.5;
+  }
+  return p;
+}
+
+// 4. Contract Hunting - target/bullseye with gaps
+function targetPositions(n: number): Float32Array {
+  const p = new Float32Array(n * 3);
+  
+  for (let i = 0; i < n; i++) {
+    const section = Math.random();
+    if (section < 0.2) {
+      // Center dot
+      const angle = Math.random() * Math.PI * 2;
+      const r = Math.sqrt(Math.random()) * 0.2;
+      p[i * 3] = Math.cos(angle) * r;
+      p[i * 3 + 1] = Math.sin(angle) * r;
+    } else if (section < 0.45) {
+      // Inner ring (with gaps)
+      const angle = Math.random() * Math.PI * 2;
+      if (Math.sin(angle * 2) > -0.5) {
+        const r = 0.55 + (Math.random() - 0.5) * 0.08;
+        p[i * 3] = Math.cos(angle) * r;
+        p[i * 3 + 1] = Math.sin(angle) * r;
+      }
+    } else if (section < 0.7) {
+      // Outer ring (with gaps)
+      const angle = Math.random() * Math.PI * 2;
+      if (Math.cos(angle * 3) > -0.3) {
+        const r = 1.0 + (Math.random() - 0.5) * 0.08;
+        p[i * 3] = Math.cos(angle) * r;
+        p[i * 3 + 1] = Math.sin(angle) * r;
+      }
+    } else if (section < 0.85) {
+      // Outermost ring
+      const angle = Math.random() * Math.PI * 2;
+      const r = 1.4 + (Math.random() - 0.5) * 0.08;
+      p[i * 3] = Math.cos(angle) * r;
+      p[i * 3 + 1] = Math.sin(angle) * r;
+    } else {
+      // Crosshair lines
+      const axis = Math.random() > 0.5;
+      const t = (Math.random() - 0.5) * 3.0;
+      p[i * 3] = axis ? t : (Math.random() - 0.5) * 0.04;
+      p[i * 3 + 1] = axis ? (Math.random() - 0.5) * 0.04 : t;
+    }
+    p[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
+  }
+  return p;
+}
+
+// 5. Admin Time Sink - hourglass draining
+function hourglassPositions(n: number): Float32Array {
+  const p = new Float32Array(n * 3);
+  
+  for (let i = 0; i < n; i++) {
+    const section = Math.random();
+    if (section < 0.25) {
+      // Top triangle (inverted) - full of sand
+      const t = Math.random();
+      const width = t * 1.0;
+      p[i * 3] = (Math.random() - 0.5) * width * 2;
+      p[i * 3 + 1] = 0.1 + t * 1.3;
+    } else if (section < 0.5) {
+      // Bottom triangle - filling with sand
+      const t = Math.random();
+      const width = (1 - t) * 1.0;
+      p[i * 3] = (Math.random() - 0.5) * width * 2;
+      p[i * 3 + 1] = -0.1 - t * 1.3;
+    } else if (section < 0.6) {
+      // Narrow middle (neck)
+      p[i * 3] = (Math.random() - 0.5) * 0.08;
+      p[i * 3 + 1] = (Math.random() - 0.5) * 0.3;
+    } else if (section < 0.7) {
+      // Sand stream through middle
+      p[i * 3] = (Math.random() - 0.5) * 0.04;
+      p[i * 3 + 1] = (Math.random() - 0.5) * 0.8;
+    } else if (section < 0.85) {
+      // Top frame bar
+      const y = Math.random() > 0.5 ? 1.45 : -1.45;
+      p[i * 3] = (Math.random() - 0.5) * 2.2;
+      p[i * 3 + 1] = y + (Math.random() - 0.5) * 0.08;
+    } else {
+      // Side frame lines
+      const side = Math.random() > 0.5 ? 1 : -1;
+      const topOrBottom = Math.random() > 0.5;
+      if (topOrBottom) {
+        const t = Math.random();
+        p[i * 3] = side * (0.04 + t * 0.96);
+        p[i * 3 + 1] = 1.4 + (Math.random() - 0.5) * 0.06;
+      } else {
+        const t = Math.random();
+        p[i * 3] = side * (0.04 + t * 0.96);
+        p[i * 3 + 1] = -1.4 + (Math.random() - 0.5) * 0.06;
+      }
+    }
+    p[i * 3 + 2] = (Math.random() - 0.5) * 0.25;
+  }
+  return p;
+}
+
+// 6. Scaling Wall - brick wall barrier
+function brickWallPositions(n: number): Float32Array {
+  const p = new Float32Array(n * 3);
+  const rows = 7;
+  const cols = 5;
+  const brickW = 0.55;
+  const brickH = 0.32;
+  const gap = 0.04;
+  
+  for (let i = 0; i < n; i++) {
+    const section = Math.random();
+    if (section < 0.8) {
+      // Brick outlines
+      const row = Math.floor(Math.random() * rows);
+      const col = Math.floor(Math.random() * cols);
+      const offset = (row % 2) * brickW * 0.5; // stagger rows
+      
+      const bx = (col - cols / 2) * (brickW + gap) + offset;
+      const by = (row - rows / 2) * (brickH + gap);
+      
+      // Place on brick edges
+      const edge = Math.random();
+      if (edge < 0.25) {
+        p[i * 3] = bx + (Math.random() - 0.5) * brickW;
+        p[i * 3 + 1] = by + brickH / 2;
+      } else if (edge < 0.5) {
+        p[i * 3] = bx + (Math.random() - 0.5) * brickW;
+        p[i * 3 + 1] = by - brickH / 2;
+      } else if (edge < 0.75) {
+        p[i * 3] = bx + brickW / 2;
+        p[i * 3 + 1] = by + (Math.random() - 0.5) * brickH;
+      } else {
+        p[i * 3] = bx - brickW / 2;
+        p[i * 3 + 1] = by + (Math.random() - 0.5) * brickH;
+      }
+    } else {
+      // Cracks running through wall
+      const crackY = (Math.random() - 0.5) * 2.5;
+      const crackX = Math.sin(crackY * 2) * 0.3 + (Math.random() - 0.5) * 0.1;
+      p[i * 3] = crackX;
+      p[i * 3 + 1] = crackY;
+    }
+    p[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
+  }
+  return p;
+}
+
+// 7. Customer Service Gaps - phone with disconnected signal waves
+function phoneGapsPositions(n: number): Float32Array {
+  const p = new Float32Array(n * 3);
+  const phoneCount = Math.floor(n * 0.45);
+  const waveCount = n - phoneCount;
+  
+  // Phone body
+  for (let i = 0; i < phoneCount; i++) {
+    const section = Math.random();
+    if (section < 0.6) {
+      // Phone rectangle body
+      const edge = Math.random();
+      if (edge < 0.3) {
+        // Fill body
+        p[i * 3] = (Math.random() - 0.5) * 0.8;
+        p[i * 3 + 1] = (Math.random() - 0.5) * 1.6;
+      } else if (edge < 0.55) {
+        // Left/right edges
+        p[i * 3] = (Math.random() > 0.5 ? 0.4 : -0.4) + (Math.random() - 0.5) * 0.04;
+        p[i * 3 + 1] = (Math.random() - 0.5) * 1.6;
+      } else if (edge < 0.8) {
+        // Top/bottom edges
+        p[i * 3] = (Math.random() - 0.5) * 0.8;
+        p[i * 3 + 1] = (Math.random() > 0.5 ? 0.8 : -0.8) + (Math.random() - 0.5) * 0.04;
+      } else {
+        // Screen area
+        p[i * 3] = (Math.random() - 0.5) * 0.6;
+        p[i * 3 + 1] = (Math.random() - 0.5) * 1.0 + 0.1;
+      }
+    } else {
+      // X mark on screen (missed call)
+      const arm = Math.random() > 0.5 ? 1 : -1;
+      const t = (Math.random() - 0.5) * 0.5;
+      p[i * 3] = t * arm;
+      p[i * 3 + 1] = t + 0.1;
+    }
+    p[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
+  }
+  
+  // Broken signal waves radiating out
+  for (let i = 0; i < waveCount; i++) {
+    const idx = phoneCount + i;
+    const waveNum = Math.floor(Math.random() * 3);
+    const r = 1.0 + waveNum * 0.5;
+    const angle = Math.random() * Math.PI * 0.8 + Math.PI * 0.1; // upper right quadrant
+    
+    // Broken arcs (gaps)
+    if (Math.sin(angle * 4 + waveNum) > -0.2) {
+      p[idx * 3] = 0.5 + Math.cos(angle) * r + (Math.random() - 0.5) * 0.06;
+      p[idx * 3 + 1] = 0.3 + Math.sin(angle) * r + (Math.random() - 0.5) * 0.06;
+    } else {
+      // Scattered fragments where gaps are
+      p[idx * 3] = 0.5 + Math.cos(angle) * (r + 0.3) + (Math.random() - 0.5) * 0.3;
+      p[idx * 3 + 1] = 0.3 + Math.sin(angle) * (r + 0.3) + (Math.random() - 0.5) * 0.3;
+    }
+    p[idx * 3 + 2] = (Math.random() - 0.5) * 0.2;
+  }
+  return p;
+}
+
+// 8. Tech Resistance - paper stack / spreadsheet
+function paperStackPositions(n: number): Float32Array {
+  const p = new Float32Array(n * 3);
+  const numSheets = 5;
+  
+  for (let i = 0; i < n; i++) {
+    const sheet = Math.floor(Math.random() * numSheets);
+    const zOff = (sheet - numSheets / 2) * 0.2;
+    const xOff = sheet * 0.08;
+    const yOff = sheet * 0.05;
+    const section = Math.random();
+    
+    if (section < 0.5) {
+      // Paper edges
+      const edge = Math.random();
+      if (edge < 0.25) {
+        p[i * 3] = xOff + (Math.random() - 0.5) * 1.4;
+        p[i * 3 + 1] = yOff + 0.9;
+      } else if (edge < 0.5) {
+        p[i * 3] = xOff + (Math.random() - 0.5) * 1.4;
+        p[i * 3 + 1] = yOff - 0.9;
+      } else if (edge < 0.75) {
+        p[i * 3] = xOff + 0.7;
+        p[i * 3 + 1] = yOff + (Math.random() - 0.5) * 1.8;
+      } else {
+        p[i * 3] = xOff - 0.7;
+        p[i * 3 + 1] = yOff + (Math.random() - 0.5) * 1.8;
+      }
+    } else if (section < 0.75) {
+      // Text lines on paper
+      const line = Math.floor(Math.random() * 6);
+      p[i * 3] = xOff + (Math.random() - 0.3) * 1.0 - 0.1;
+      p[i * 3 + 1] = yOff + 0.6 - line * 0.25 + (Math.random() - 0.5) * 0.02;
+    } else {
+      // Dog-eared corner
+      if (sheet === numSheets - 1) {
+        const t = Math.random() * 0.3;
+        p[i * 3] = xOff + 0.7 - t;
+        p[i * 3 + 1] = yOff + 0.9 - t;
+      } else {
+        // Random fill
+        p[i * 3] = xOff + (Math.random() - 0.5) * 1.2;
+        p[i * 3 + 1] = yOff + (Math.random() - 0.5) * 1.6;
+      }
+    }
+    p[i * 3 + 2] = zOff + (Math.random() - 0.5) * 0.08;
+  }
+  return p;
+}
+
 
 // ─── Component ──────────────────────────────────────────────────────
 
@@ -191,7 +646,6 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
   const rotationRef = useRef(0);
   const animFrameRef = useRef<number>(0);
   const lastTimeRef = useRef(0);
-  // Store DPR and logical dimensions to avoid cumulative ctx.scale issues
   const dprRef = useRef(1);
   const logicalWidthRef = useRef(0);
   const logicalHeightRef = useRef(0);
@@ -200,19 +654,25 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
   const shapes = useMemo(() => {
     if (variant === 'hero') {
       return [
-        wrenchPositions(NUM_PARTICLES),
-        torusPositions(NUM_PARTICLES, 1.2, 0.4),
-        brainPositions(NUM_PARTICLES),
-        circuitPositions(NUM_PARTICLES),
-        dnaPositions(NUM_PARTICLES),
-        spherePositions(NUM_PARTICLES, 1.5),
+        hammerPositions(NUM_PARTICLES),       // Trade tool
+        gearPositions(NUM_PARTICLES),         // Mechanical transition
+        brainPositions(NUM_PARTICLES),        // AI intelligence
+        neuralNetPositions(NUM_PARTICLES),    // Connected AI
+        dnaPositions(NUM_PARTICLES),          // Advanced AI
+        spherePositions(NUM_PARTICLES, 1.5),  // Fully evolved
       ];
     } else {
+      // 8 shapes + 1 resolved = 9 shapes for pain points
       return [
-        scatteredPositions(NUM_PARTICLES),
-        brokenCubePositions(NUM_PARTICLES),
-        networkPositions(NUM_PARTICLES),
-        spherePositions(NUM_PARTICLES, 1.5),
+        chaosClockPositions(NUM_PARTICLES),     // 1. Job Management Chaos
+        tangledSystemPositions(NUM_PARTICLES),   // 2. System Overload
+        dollarSignPositions(NUM_PARTICLES),      // 3. Cash Flow Crunch
+        targetPositions(NUM_PARTICLES),          // 4. Contract Hunting
+        hourglassPositions(NUM_PARTICLES),       // 5. Admin Time Sink
+        brickWallPositions(NUM_PARTICLES),       // 6. Scaling Wall
+        phoneGapsPositions(NUM_PARTICLES),       // 7. Customer Service Gaps
+        paperStackPositions(NUM_PARTICLES),      // 8. Tech Resistance
+        spherePositions(NUM_PARTICLES, 1.5),     // Resolved state
       ];
     }
   }, [variant]);
@@ -220,18 +680,23 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
   const colors = useMemo(() => {
     if (variant === 'hero') {
       return [
-        [153, 102, 255],  // Purple - wrench
-        [102, 51, 255],   // Deep purple - torus
+        [255, 165, 50],   // Orange/amber - hammer (trade warmth)
+        [180, 140, 200],  // Muted purple - gear (transition)
         [178, 25, 230],   // Magenta - brain
-        [77, 204, 255],   // Cyan - circuit
+        [77, 204, 255],   // Cyan - neural net
         [128, 255, 128],  // Green - DNA
         [204, 102, 255],  // Light purple - sphere
       ];
     } else {
       return [
-        [255, 51, 51],    // Red - chaos
-        [255, 128, 25],   // Orange - broken
-        [77, 204, 255],   // Cyan - network
+        [255, 60, 60],    // Red - chaos clock
+        [255, 100, 30],   // Orange - tangled systems
+        [255, 200, 50],   // Gold - dollar sign
+        [255, 80, 80],    // Red - target
+        [200, 100, 255],  // Purple - hourglass
+        [255, 120, 50],   // Orange - brick wall
+        [100, 180, 255],  // Blue - phone
+        [180, 180, 180],  // Gray - paper
         [102, 255, 102],  // Green - resolved
       ];
     }
@@ -289,7 +754,6 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
       const w = rect.width;
       const h = rect.height;
       
-      // Skip if parent has no dimensions (not yet laid out)
       if (w === 0 || h === 0) return;
       
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -297,32 +761,22 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
       logicalWidthRef.current = w;
       logicalHeightRef.current = h;
       
-      // Set canvas pixel buffer size
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
-      
-      // Set CSS display size
       canvas.style.width = w + 'px';
       canvas.style.height = h + 'px';
-      
-      // NOTE: We do NOT call ctx.scale(dpr, dpr) here.
-      // Instead, we use setTransform per frame to avoid cumulative scaling on resize.
     };
 
     resizeCanvas();
-    // Retry resize after layout settles (critical for production where layout may be delayed)
     const resizeTimeout = setTimeout(resizeCanvas, 100);
     const resizeTimeout2 = setTimeout(resizeCanvas, 500);
     const resizeTimeout3 = setTimeout(resizeCanvas, 1000);
     window.addEventListener('resize', resizeCanvas);
     
-    // Use ResizeObserver for robust detection when parent gets dimensions
     let resizeObserver: ResizeObserver | null = null;
     const parent = canvas.parentElement;
     if (parent && typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(() => {
-        resizeCanvas();
-      });
+      resizeObserver = new ResizeObserver(() => resizeCanvas());
       resizeObserver.observe(parent);
     }
 
@@ -337,7 +791,6 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
       const h = logicalHeightRef.current;
       const dpr = dprRef.current;
       
-      // Skip frame if canvas has no size
       if (w === 0 || h === 0) return;
 
       const progress = progressRef.current;
@@ -345,7 +798,6 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
       const segLen = 1 / (numShapes - 1);
       const segIdx = Math.min(Math.floor(progress / segLen), numShapes - 2);
       const segProg = (progress - segIdx * segLen) / segLen;
-      // Smooth easing
       const eased = segProg * segProg * (3 - 2 * segProg);
 
       const s1 = shapes[segIdx];
@@ -353,21 +805,20 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
       const c1 = colors[segIdx];
       const c2 = colors[segIdx + 1];
 
-      // Interpolate color
       const cr = Math.round(c1[0] + (c2[0] - c1[0]) * eased);
       const cg = Math.round(c1[1] + (c2[1] - c1[1]) * eased);
       const cb = Math.round(c1[2] + (c2[2] - c1[2]) * eased);
 
-      // Update rotation
-      rotationRef.current += delta * 0.3;
+      // Slower rotation for pain points to keep shapes readable
+      const rotSpeed = variant === 'painPoints' ? 0.15 : 0.3;
+      rotationRef.current += delta * rotSpeed;
       const rot = rotationRef.current;
       const cosR = Math.cos(rot);
       const sinR = Math.sin(rot);
-      const tiltAngle = Math.sin(time * 0.0003) * 0.15;
+      const tiltAngle = Math.sin(time * 0.0003) * (variant === 'painPoints' ? 0.08 : 0.15);
       const cosT = Math.cos(tiltAngle);
       const sinT = Math.sin(tiltAngle);
 
-      // Update positions with lerp
       const lerpSpeed = Math.min(delta * 6, 1);
       for (let i = 0; i < NUM_PARTICLES; i++) {
         const i3 = i * 3;
@@ -379,14 +830,10 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
         currentPositions[i3+2] += (tz - currentPositions[i3+2]) * lerpSpeed;
       }
 
-      // Clear the entire canvas buffer (use pixel dimensions, not logical)
       ctx.resetTransform();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Set the DPR transform for this frame (avoids cumulative scaling)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      // Draw particles with additive blending
       ctx.globalCompositeOperation = 'lighter';
 
       for (let i = 0; i < NUM_PARTICLES; i++) {
@@ -395,13 +842,11 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
         let y = currentPositions[i3+1];
         let z = currentPositions[i3+2];
 
-        // Apply Y rotation
         const rx = x * cosR - z * sinR;
         const rz = x * sinR + z * cosR;
         x = rx;
         z = rz;
 
-        // Apply X tilt
         const ry = y * cosT - z * sinT;
         const rz2 = y * sinT + z * cosT;
         y = ry;
@@ -419,10 +864,8 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
         ctx.fill();
       }
 
-      // Reset composite
       ctx.globalCompositeOperation = 'source-over';
 
-      // Draw glow overlay in center
       const gradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.35);
       gradient.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, 0.08)`);
       gradient.addColorStop(0.5, `rgba(${cr}, ${cg}, ${cb}, 0.03)`);
@@ -442,9 +885,8 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
       window.removeEventListener('resize', resizeCanvas);
       if (resizeObserver) resizeObserver.disconnect();
     };
-  }, [shapes, colors, currentPositions, particleOffsets, particleSizes, project]);
+  }, [shapes, colors, currentPositions, particleOffsets, particleSizes, project, variant]);
 
-  // Update progress
   useEffect(() => {
     progressRef.current = Math.max(0, Math.min(1, scrollProgress));
   }, [scrollProgress]);
