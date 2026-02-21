@@ -272,3 +272,19 @@
 - [x] Make all shapes overly defined with edge-heavy particles (kept 3D z-depth)
 - [x] Same treatment for pain point shapes (scroll-driven rotation)
 - [x] Test and verify shapes are instantly recognizable
+
+## Particle Shape Fix v4
+- [ ] Fix wrench shape - looks like a key, needs proper open-end jaw
+- [ ] Fix hammer shape - has weird claw appendages, needs clean rectangular head
+- [ ] Restore auto-spinning (continuous slow rotation, not scroll-tied)
+- [ ] Unify ALL particle colors to GTM Planetary purple (no gold/amber)
+- [ ] All shapes same purple color throughout hero and pain points
+
+## Particle Shape Fix v4 (Updated)
+- [x] Fix wrench shape (remove box-end ring, simple open-end wrench)
+- [x] Fix hammer shape (remove claw, clean rectangular head)
+- [x] Restore auto-spinning (continuous slow rotation, time-based)
+- [x] Unify ALL particle colors to GTM Planetary purple
+- [x] Reduce pain point shapes to 4 + resolved orb (clock, dollar, target, phone)
+- [x] Keep all 8 pain point text items in scrolling list
+- [x] Map 8 scroll items to 5 particle shapes

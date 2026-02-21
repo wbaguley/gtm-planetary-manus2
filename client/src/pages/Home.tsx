@@ -197,7 +197,7 @@ export default function Home() {
       ScrollTrigger.create({
         trigger: painRef.current,
         start: "top top",
-        end: "+=500%",
+        end: "+=400%",
         pin: true,
         scrub: 0.8,
         onUpdate: (self) => {
