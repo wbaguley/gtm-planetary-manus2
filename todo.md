@@ -227,3 +227,13 @@
 - [x] Rebuild pain points 3D visual to professional quality
 - [x] Make morphing smooth and continuous as you scroll
 - [ ] Test on published site to verify WebGL rendering
+
+## AI-Themed Hero Images
+- [x] Generate image 1: Wrench/pipe wrench morphing into circuit board / neural network
+- [x] Generate image 2: Hardhat morphing into AI brain / neural network
+- [x] Generate image 3: Blueprint/toolbox morphing into holographic data interface
+- [x] Generate image 4: Trade tools dissolving into glowing AI particles / digital matrix
+- [x] Upload all images to S3
+- [x] Replace CSS orb with scroll-triggered image transitions in hero section
+- [x] Replace PainPointsScene with scroll-triggered pain point images
+- [ ] Test scroll-based image morphing effect
