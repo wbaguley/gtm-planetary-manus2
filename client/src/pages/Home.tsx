@@ -8,13 +8,13 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 
-
-
 export default function Home() {
   const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [expandedPainPoint, setExpandedPainPoint] = useState<string | null>(null);
+  const [scrollY, setScrollY] = useState(0);
   const particlesInitialized = useRef(false);
 
   const contactMutation = trpc.contact.submit.useMutation({
@@ -35,120 +35,132 @@ export default function Home() {
     message: "",
   });
 
-  const products = [
+  // AI Capabilities for floating cards
+  const aiCapabilities = [
     {
+      id: "voice",
+      icon: "fa-phone-volume",
+      title: "Voice AI Agents",
+      shortDesc: "Answer calls 24/7",
+      fullDesc: "AI voice agents that answer every call, qualify leads, book appointments, and handle customer service inquiries. Never miss a call again. Works 24/7 without breaks, sick days, or turnover.",
+      color: "from-purple-500 to-pink-500"
+    },
+    {
+      id: "document",
+      icon: "fa-file-invoice",
+      title: "Document Intelligence",
+      shortDesc: "Extract data instantly",
+      fullDesc: "AI that reads invoices, contracts, permits, and forms—extracting key information automatically. Eliminate manual data entry and reduce errors. Processes hundreds of documents in seconds.",
+      color: "from-cyan-500 to-blue-500"
+    },
+    {
+      id: "scheduling",
+      icon: "fa-calendar-check",
+      title: "Predictive Scheduling",
+      shortDesc: "Optimize routes & timing",
+      fullDesc: "AI-powered scheduling that optimizes routes, forecasts demand, prevents conflicts, and maximizes technician utilization. Reduce drive time by 30% and increase jobs per day.",
+      color: "from-green-500 to-emerald-500"
+    },
+    {
+      id: "bidding",
+      icon: "fa-search-dollar",
+      title: "Bid Automation",
+      shortDesc: "Find & win contracts",
+      fullDesc: "AI agents that find contract opportunities, generate competitive bids, and track proposals automatically. Never miss a bidding opportunity. Win more contracts with data-driven pricing.",
+      color: "from-orange-500 to-red-500"
+    },
+    {
+      id: "customer",
+      icon: "fa-users-cog",
+      title: "Customer Intelligence",
+      shortDesc: "Predict needs & automate follow-ups",
+      fullDesc: "AI that analyzes customer history, predicts service needs, automates follow-ups, and identifies upsell opportunities. Turn one-time customers into lifetime relationships.",
+      color: "from-violet-500 to-purple-500"
+    },
+    {
+      id: "copilot",
       icon: "fa-robot",
-      title: "Custom AI Agent Workforce",
-      description: "Empower your business with custom AI for voice and chat. From sales to success, these agents act as virtual employees, capable of reading and editing data within any system you use, including CRMs and dispatching tools.",
-    },
-    {
-      icon: "fa-calendar-alt",
-      title: "AI-Powered Scheduling Systems",
-      description: "Automatically book, reschedule, and assign tasks based on availability, location, and urgency. Optimize staff allocation and reduce scheduling conflicts.",
-    },
-    {
-      icon: "fa-tools",
-      title: "Predictive Maintenance Tools",
-      description: "Monitor equipment health, forecast issues, and reduce downtime through proactive interventions. Prevent costly breakdowns before they happen.",
-    },
-    {
-      icon: "fa-users",
-      title: "Custom CRM & Lead Management",
-      description: "Automate follow-ups, lead scoring, and customer journey tracking. Keep your sales pipeline full and convert more prospects into customers.",
-    },
-    {
-      icon: "fa-calculator",
-      title: "Automated Quoting & Cost Estimation",
-      description: "Provide accurate, AI-driven quotes and estimates based on project specifications and historical data. Win more business with faster, more accurate quotes.",
-    },
-    {
-      icon: "fa-boxes",
-      title: "Inventory Management Systems",
-      description: "Automate inventory tracking, restocking, and analytics for optimal supply chain management. Never run out of critical supplies again.",
-    },
-    {
-      icon: "fa-chart-bar",
-      title: "Data Analytics & Reporting Dashboards",
-      description: "Generate insights from data to enhance decision-making and improve operations. See your business performance at a glance.",
-    },
-    {
-      icon: "fa-file-invoice-dollar",
-      title: "AI-Powered Invoicing & Payment Systems",
-      description: "Streamline billing, generate invoices, and accept payments through integrated platforms. Get paid faster and reduce accounting headaches.",
-    },
-    {
-      icon: "fa-tasks",
-      title: "Workflow Optimization Platforms",
-      description: "Improve efficiency by automating repetitive tasks and organizing complex workflows. Eliminate bottlenecks and streamline operations.",
-    },
-    {
-      icon: "fa-route",
-      title: "Route Optimization & Fleet Management",
-      description: "Optimize travel routes for efficiency, cost savings, and enhanced customer service. Reduce fuel costs and increase service calls per day.",
-    },
-    {
-      icon: "fa-file-alt",
-      title: "Document Processing & Data Entry Systems",
-      description: "Automate form processing, OCR (optical character recognition), and data entry. Eliminate manual paperwork and reduce errors.",
-    },
+      title: "Operations Copilot",
+      shortDesc: "One AI for all systems",
+      fullDesc: "Your AI teammate that connects all your systems—CRM, accounting, scheduling, inventory. Ask it anything, get instant answers. Automate workflows and approvals across your entire business.",
+      color: "from-pink-500 to-rose-500"
+    }
   ];
 
-  // Case Studies Data - REMOVED
-  /*const caseStudies = [
+  // Trade Pain Points
+  const painPoints = [
     {
-      id: 1,
-      title: "HVAC Company Automation",
-      client: "Regional HVAC Service Provider",
-      industry: "HVAC",
-      challenge: "Manual scheduling causing double-bookings and missed appointments",
-      solution: "AI-Powered Scheduling System + Custom CRM Integration",
-      results: {
-        efficiency: "+45%",
-        revenue: "+32%",
-        satisfaction: "4.8/5.0"
-      },
-      techStack: ["AI Agents", "CRM Integration", "SMS Automation", "Calendar Sync"],
-      videoUrl: "", // Placeholder for future video
-      image: "/case-study-hvac.jpg" // Placeholder
+      id: "chaos",
+      icon: "fa-calendar-times",
+      title: "Job Management Chaos",
+      problem: "Missed deadlines. Scheduling nightmares. No visibility into who's doing what.",
+      solution: "AI agents that schedule, dispatch, and track every job in real-time. Complete visibility across your entire operation.",
+      color: "border-red-500"
     },
     {
-      id: 2,
-      title: "Plumbing Fleet Optimization",
-      client: "Multi-State Plumbing Company",
-      industry: "Plumbing",
-      challenge: "Inefficient routing leading to high fuel costs and delayed service",
-      solution: "Route Optimization & Fleet Management System",
-      results: {
-        fuelSavings: "-28%",
-        serviceCapacity: "+40%",
-        responseTime: "-35%"
-      },
-      techStack: ["GPS Integration", "AI Route Planning", "Real-time Tracking", "Predictive Analytics"],
-      videoUrl: "",
-      image: "/case-study-plumbing.jpg"
+      id: "systems",
+      icon: "fa-link-slash",
+      title: "System Overload",
+      problem: "5-10 tools that don't talk. Entering the same data 4 times. Information silos.",
+      solution: "One AI copilot that connects everything. Ask it anything, get instant answers from all your systems.",
+      color: "border-orange-500"
     },
     {
-      id: 3,
-      title: "Electrical Contractor CRM",
-      client: "Commercial Electrical Contractor",
-      industry: "Electrical",
-      challenge: "Lost leads and poor follow-up processes",
-      solution: "Custom AI Agent Workforce + Lead Management",
-      results: {
-        leadConversion: "+55%",
-        responseTime: "-80%",
-        revenue: "+48%"
-      },
-      techStack: ["Voice AI", "Chat AI", "CRM Automation", "Email Integration"],
-      videoUrl: "",
-      image: "/case-study-electrical.jpg"
+      id: "cashflow",
+      icon: "fa-money-bill-wave",
+      title: "Cash Flow Crunch",
+      problem: "Slow payments. Can't track profitability per job. Financial blind spots.",
+      solution: "AI that tracks every dollar, automates invoicing, and predicts cash flow. Get paid faster.",
+      color: "border-yellow-500"
+    },
+    {
+      id: "contracts",
+      icon: "fa-bullseye",
+      title: "Contract Hunting",
+      problem: "Manual bidding. Leads slip away. No follow-up system.",
+      solution: "AI agents that find contracts, generate bids, and nurture leads automatically. Never miss an opportunity.",
+      color: "border-green-500"
+    },
+    {
+      id: "admin",
+      icon: "fa-clock",
+      title: "Admin Time Sink",
+      problem: "60% of your day on paperwork instead of billable work.",
+      solution: "AI handles quotes, invoices, follow-ups, and CRM updates while you work. Reclaim your time.",
+      color: "border-blue-500"
+    },
+    {
+      id: "scaling",
+      icon: "fa-chart-line",
+      title: "Scaling Wall",
+      problem: "Can't grow without adding headcount. 6-month ramp time. Turnover risk.",
+      solution: "AI workforce scales instantly. No hiring. No training. No turnover. Deploy agents in days, not months.",
+      color: "border-indigo-500"
+    },
+    {
+      id: "service",
+      icon: "fa-phone-slash",
+      title: "Customer Service Gaps",
+      problem: "Overwhelmed front desk. Slow response times. Calls go to voicemail.",
+      solution: "AI voice agents answer every call, book appointments, and handle FAQs 24/7. Zero missed calls.",
+      color: "border-purple-500"
+    },
+    {
+      id: "tech",
+      icon: "fa-file-alt",
+      title: "Tech Resistance",
+      problem: "Stuck on paper and spreadsheets. New systems are too complicated.",
+      solution: "Just talk to your AI copilot. No training needed. Works like a team member, not software.",
+      color: "border-pink-500"
     }
-  ];*/
+  ];
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+      const offset = 80;
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({ top: elementPosition - offset, behavior: "smooth" });
       setActiveSection(sectionId);
       setMobileMenuOpen(false);
     }
@@ -159,42 +171,35 @@ export default function Home() {
     contactMutation.mutate(formData);
   };
 
-  const nextProduct = () => {
-    setCurrentCarouselIndex((prev) => (prev + 1) % products.length);
-  };
-
-  const prevProduct = () => {
-    setCurrentCarouselIndex((prev) => (prev - 1 + products.length) % products.length);
-  };
-
+  // Parallax scroll effect
   useEffect(() => {
-    const interval = setInterval(nextProduct, 5000);
-    return () => clearInterval(interval);
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Particles.js initialization
   useEffect(() => {
     if (!particlesInitialized.current && typeof window !== 'undefined') {
       particlesInitialized.current = true;
-      
-      // Dynamically load particles.js
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js';
       script.async = true;
       script.onload = () => {
-        // @ts-ignore
-        if (window.particlesJS) {
-          // @ts-ignore
-          window.particlesJS('particles-js', {
+        if ((window as any).particlesJS) {
+          (window as any).particlesJS('particles-js', {
         particles: {
           number: {
-            value: 100,
+            value: 80,
             density: {
               enable: true,
               value_area: 800
             }
           },
           color: {
-            value: ['#ad18fc', '#18f0fc', '#eb00ff', '#410081']
+            value: '#ad18fc'
           },
           shape: {
             type: 'circle',
@@ -315,7 +320,7 @@ export default function Home() {
 
             <div className="flex items-center gap-6">
               <ul className={`${mobileMenuOpen ? 'flex' : 'hidden'} md:flex flex-col md:flex-row absolute md:relative top-20 md:top-0 left-0 right-0 bg-background md:bg-transparent border-b md:border-0 border-border md:space-x-8 p-4 md:p-0`}>
-                {["home", "about", "services", "solutions", "pricing", "blog", "contact"].map((section) => (
+                {["home", "capabilities", "solutions", "how-it-works", "about", "blog", "contact"].map((section) => (
                   <li key={section}>
                     {section === "blog" ? (
                       <a
@@ -331,7 +336,7 @@ export default function Home() {
                           activeSection === section ? "text-primary" : "text-foreground hover:text-primary"
                         }`}
                       >
-                        {section === "solutions" ? "Who We Serve" : section}
+                        {section === "capabilities" ? "AI Capabilities" : section === "how-it-works" ? "How It Works" : section}
                       </button>
                     )}
                   </li>
@@ -349,336 +354,261 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 scan-lines">
-        <div className="absolute inset-0 grid-bg"></div>
-        <div id="particles-js" className="absolute inset-0"></div>
+      {/* Hero Section with Parallax */}
+      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        {/* Parallax Background Layers */}
+        <div 
+          className="absolute inset-0 grid-bg" 
+          style={{ transform: `translateY(${scrollY * 0.5}px)` }}
+        ></div>
+        <div 
+          id="particles-js" 
+          className="absolute inset-0"
+          style={{ transform: `translateY(${scrollY * 0.3}px)` }}
+        ></div>
+        
+        {/* Hero Content */}
         <div className="container relative z-10 text-center px-4">
           <h1 className="font-orbitron text-3xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            WHERE TRADES <span className="glitch neon-glow inline-block" data-text="MEET AI">MEET AI</span>
+            STOP HIRING. <span className="glitch neon-glow inline-block" data-text="START DEPLOYING.">START DEPLOYING.</span>
           </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-muted-foreground reveal">
-            We build smart workflows, AI agents, and automation tools to save time, cut costs, and grow your business.
+          <p className="text-xl md:text-2xl mb-12 max-w-3xl mx-auto text-muted-foreground">
+            Custom AI models and autonomous agents that handle operations, bidding, scheduling, and customer service—so you can focus on the work that matters.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center reveal">
+          
+          {/* Floating AI Capability Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-12">
+            {aiCapabilities.map((capability, index) => (
+              <div
+                key={capability.id}
+                className={`floating-card floating-card-${index + 1} cursor-pointer transition-all duration-300 ${
+                  expandedCard === capability.id ? 'scale-105 z-20' : 'hover:scale-105'
+                }`}
+                onClick={() => setExpandedCard(expandedCard === capability.id ? null : capability.id)}
+                style={{
+                  animationDelay: `${index * 0.2}s`
+                }}
+              >
+                <Card className={`bg-black/80 backdrop-blur-sm border-2 ${expandedCard === capability.id ? 'border-primary' : 'border-primary/30'} hover:border-primary transition-all duration-300 h-full`}>
+                  <CardContent className="p-6">
+                    <div className={`w-16 h-16 bg-gradient-to-br ${capability.color} rounded-full flex items-center justify-center mb-4 mx-auto`}>
+                      <i className={`fas ${capability.icon} text-2xl text-white`}></i>
+                    </div>
+                    <h3 className="font-orbitron text-lg font-bold mb-2 text-white">{capability.title}</h3>
+                    <p className="text-sm text-gray-400 mb-3">{capability.shortDesc}</p>
+                    {expandedCard === capability.id && (
+                      <div className="mt-4 pt-4 border-t border-primary/30">
+                        <p className="text-sm text-gray-300">{capability.fullDesc}</p>
+                      </div>
+                    )}
+                    <div className="text-xs text-primary mt-3">
+                      {expandedCard === capability.id ? 'Click to collapse' : 'Click for details'}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
               className="font-orbitron uppercase tracking-wider bg-primary hover:bg-primary/90 pulse-border"
               onClick={() => scrollToSection("contact")}
             >
-              Get Started
+              Build Your AI Workforce
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="font-orbitron uppercase tracking-wider"
-              onClick={() => scrollToSection("services")}
+              onClick={() => scrollToSection("solutions")}
             >
-              Learn More
+              See What We Solve
             </Button>
           </div>
         </div>
+        
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center animate-bounce">
           <span className="block text-sm mb-2">Scroll Down</span>
           <i className="fas fa-chevron-down text-primary"></i>
         </div>
       </section>
 
-      {/* About Section - Updated with FINAL intro video */}
+      {/* Pain Points Section */}
+      <section id="solutions" className="py-20 bg-black relative">
+        <div className="container">
+          <div className="text-center mb-16 reveal">
+            <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
+              WHAT'S <span className="text-primary neon-glow">HOLDING YOU BACK?</span>
+            </h2>
+            <div className="w-24 h-1 bg-primary mx-auto mb-6"></div>
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              These are the frustrations we hear from trade businesses every day. Sound familiar?
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {painPoints.map((point, index) => (
+              <div
+                key={point.id}
+                className={`reveal cursor-pointer transition-all duration-300 ${
+                  expandedPainPoint === point.id ? 'md:col-span-2 lg:col-span-2' : ''
+                }`}
+                style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => setExpandedPainPoint(expandedPainPoint === point.id ? null : point.id)}
+              >
+                <Card className={`bg-black/80 border-2 ${point.color} hover:border-primary transition-all duration-300 h-full hover:scale-105 hover:shadow-2xl hover:shadow-primary/20`}>
+                  <CardContent className="p-6">
+                    <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
+                      <i className={`fas ${point.icon} text-3xl text-primary`}></i>
+                    </div>
+                    <h3 className="font-orbitron text-xl font-bold mb-3 text-white">{point.title}</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">The Problem:</p>
+                        <p className="text-sm text-gray-400">{point.problem}</p>
+                      </div>
+                      {expandedPainPoint === point.id && (
+                        <div className="mt-4 pt-4 border-t border-primary/30">
+                          <p className="text-xs text-primary uppercase tracking-wider mb-1">Our Solution:</p>
+                          <p className="text-sm text-gray-300">{point.solution}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-primary mt-4">
+                      {expandedPainPoint === point.id ? '▲ Click to collapse' : '▼ Click to see solution'}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-20 bg-black">
+        <div className="container">
+          <div className="text-center mb-16 reveal">
+            <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
+              THREE WAYS TO <span className="text-primary neon-glow">DEPLOY AI</span>
+            </h2>
+            <div className="w-24 h-1 bg-primary mx-auto"></div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
+              <CardContent className="p-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-6 mx-auto">
+                  <i className="fas fa-phone-volume text-3xl text-white"></i>
+                </div>
+                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Voice AI Agents</h3>
+                <ul className="space-y-3 text-gray-300">
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Answer calls, qualify leads, book appointments</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Handle customer service inquiries</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Follow up with quotes and reminders</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Works 24/7, never misses a call</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
+              <CardContent className="p-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center mb-6 mx-auto">
+                  <i className="fas fa-file-invoice text-3xl text-white"></i>
+                </div>
+                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Document & Data AI</h3>
+                <ul className="space-y-3 text-gray-300">
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Extract info from invoices, contracts, permits</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Analyze job history and customer patterns</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Generate quotes and proposals</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Track inventory and supplies</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
+              <CardContent className="p-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mb-6 mx-auto">
+                  <i className="fas fa-robot text-3xl text-white"></i>
+                </div>
+                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Operations Copilot</h3>
+                <ul className="space-y-3 text-gray-300">
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Connect all your systems (CRM, accounting, scheduling)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Answer questions about any job, customer, or metric</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Automate workflows and approvals</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <i className="fas fa-check text-primary mt-1"></i>
+                    <span>Predict problems before they happen</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section - Updated Messaging */}
       <section id="about" className="py-20 bg-black">
         <div className="container">
           <div className="text-center mb-12 reveal">
             <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
-              ABOUT <span className="text-primary neon-glow">GTM PLANETARY</span>
+              BUILT FOR <span className="text-primary neon-glow">TRADES, NOT TECH COMPANIES</span>
             </h2>
             <div className="w-24 h-1 bg-primary mx-auto"></div>
           </div>
 
-          <div className="max-w-2xl mx-auto text-center reveal">
-            <p className="text-lg text-gray-300 mb-4">
-              GTM Planetary LLC specializes in AI-driven automation solutions exclusively for trade and skill-based businesses.
+          <div className="max-w-4xl mx-auto space-y-6 reveal">
+            <p className="text-lg text-gray-300">
+              GTM Planetary builds custom AI models and autonomous agents exclusively for trade businesses.
             </p>
             <p className="text-gray-400">
-              We help HVAC, plumbing, electrical, construction companies, and skilled professionals like dentists and physical therapists streamline their operations with custom AI solutions.
+              We're not a typical SaaS company selling software subscriptions. We're your AI workforce partner—deploying specialized agents that handle the operations, admin, and customer service that keep you from the work you're actually good at.
+            </p>
+            <p className="text-gray-400">
+              HVAC, plumbing, electrical, construction, and skilled trades have been underserved by technology for decades. Generic tools don't understand your workflows. We do.
+            </p>
+            <p className="text-gray-400">
+              Every AI agent we build is fine-tuned on your business—your processes, your customers, your data. They learn how you work and get better over time.
+            </p>
+            <p className="text-lg text-primary font-bold mt-8">
+              Stop fighting for hiring budget. Start deploying AI agents that work alongside your team, scale instantly, and never call in sick.
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section id="services" className="py-20 bg-black">
-        <div className="container">
-          <div className="text-center mb-12 reveal">
-            <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
-              OUR <span className="text-primary neon-glow">SERVICES</span>
-            </h2>
-            <div className="w-24 h-1 bg-primary mx-auto"></div>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
-                  <i className="fas fa-brain text-3xl text-primary"></i>
-                </div>
-                <h3 className="font-orbitron text-lg font-bold mb-2 text-white">AI Consulting & Strategy</h3>
-                <p className="text-sm text-gray-300">We build a comprehensive roadmap for automation. Our consulting services analyze your current workflows, identify inefficiencies, and develop strategic plans to implement AI solutions that deliver measurable results.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
-                  <i className="fas fa-code text-3xl text-primary"></i>
-                </div>
-                <h3 className="font-orbitron text-lg font-bold mb-2 text-white">Custom AI Solution Development</h3>
-                <p className="text-sm text-gray-300">We build tailored AI systems designed for your unique business challenges. Our custom development approach ensures that every tool we create addresses your specific operational needs and integrates with your existing systems.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
-                  <i className="fas fa-plug text-3xl text-primary"></i>
-                </div>
-                <h3 className="font-orbitron text-lg font-bold mb-2 text-white">Automation Implementation & Integration</h3>
-                <p className="text-sm text-gray-300">Our team handles the complete setup, connection, and optimization of AI tools to create seamless workflows. We ensure all your systems work together efficiently without requiring technical expertise from your team.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <i className="fas fa-sync-alt text-3xl text-primary"></i>
-                </div>
-                <h3 className="font-orbitron text-lg font-bold mb-2 text-white">Fractional System Enablement & Optimization</h3>
-                <p className="text-sm text-gray-300">We deliver ongoing optimization and adaptive system engineering to keep your AI and automation tools aligned with your evolving business. Our enablement team acts as your behind-the-scenes tech partner—tuning workflows, adding capabilities, and helping you squeeze more ROI out of every tool.</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Products Carousel */}
-          <div className="mt-16">
-            <div className="text-center mb-8 reveal">
-              <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
-                OUR <span className="text-primary neon-glow">PRODUCTS</span>
-              </h2>
-              <div className="w-24 h-1 bg-primary mx-auto"></div>
-            </div>
-
-            <div className="relative max-w-2xl mx-auto reveal">
-              <Card className="bg-black border-primary/20 card-3d">
-                <CardContent className="p-8 text-center">
-                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i className={`fas ${products[currentCarouselIndex].icon} text-4xl text-primary`}></i>
-                  </div>
-                  <h3 className="font-orbitron text-2xl font-bold mb-4">{products[currentCarouselIndex].title}</h3>
-                  <p className="text-muted-foreground">{products[currentCarouselIndex].description}</p>
-                </CardContent>
-              </Card>
-
-              <button
-                onClick={prevProduct}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 w-10 h-10 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors"
-              >
-                <i className="fas fa-chevron-left text-primary"></i>
-              </button>
-
-              <button
-                onClick={nextProduct}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 w-10 h-10 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors"
-              >
-                <i className="fas fa-chevron-right text-primary"></i>
-              </button>
-
-              <div className="flex justify-center gap-2 mt-6">
-                {products.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentCarouselIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      index === currentCarouselIndex ? "bg-primary" : "bg-muted"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-
-      {/* Solutions Section */}
-      <section id="solutions" className="py-20">
-        <div className="container">
-          <div className="text-center mb-12 reveal">
-            <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
-              WHO <span className="text-primary neon-glow">WE SERVE</span>
-            </h2>
-            <div className="w-24 h-1 bg-primary mx-auto"></div>
-          </div>
-
-          <p className="text-center text-lg mb-12 max-w-3xl mx-auto reveal">
-            We serve a wide range of trade and skilled-service industries with tailored AI solutions designed for their specific needs.
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="bg-black border-primary/20 card-3d reveal">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <i className="fas fa-tools text-3xl text-primary"></i>
-                </div>
-                <h3 className="font-orbitron text-2xl font-bold mb-4">Trade Businesses</h3>
-                <ul className="space-y-2 text-muted-foreground">
-                  <li>• HVAC</li>
-                  <li>• Plumbing</li>
-                  <li>• Electrical</li>
-                  <li>• Construction</li>
-                  <li>• Crop Dusting</li>
-                  <li>• Fishing Charters</li>
-                  <li>• Window Treatment Installers</li>
-                  <li>• Mobile Service Technicians</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black border-primary/20 card-3d reveal">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <i className="fas fa-user-md text-3xl text-primary"></i>
-                </div>
-                <h3 className="font-orbitron text-2xl font-bold mb-4">Skilled Professionals</h3>
-                <ul className="space-y-2 text-muted-foreground">
-                  <li>• General Dentists</li>
-                  <li>• Oral Surgeons</li>
-                  <li>• Prosthodontists</li>
-                  <li>• Orthodontists</li>
-                  <li>• Optometrists</li>
-                  <li>• Physical Therapists</li>
-                  <li>• Specialty Clinics</li>
-                  <li>• Small Surgical Practices</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-black">
-        <div className="container">
-          <div className="text-center mb-12 reveal">
-            <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
-              PRICING <span className="text-primary neon-glow">PACKAGES</span>
-            </h2>
-            <div className="w-24 h-1 bg-primary mx-auto"></div>
-          </div>
-
-          <p className="text-center text-lg mb-12 reveal">
-            GTM Planetary offers tailored AI-driven solutions with transparent, predictable costs. All packages include the first 14 days of support for free.
-          </p>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <Card className="bg-black border-primary/30 hover:border-primary transition-colors card-3d reveal">
-              <CardContent className="p-6">
-                <h3 className="font-orbitron text-xl font-bold mb-2">Standard Package</h3>
-                <div className="text-3xl font-bold text-primary mb-4">$4,900</div>
-                <ul className="space-y-2 mb-6 text-sm">
-                  <li><i className="fas fa-check text-primary mr-2"></i>One product from our offerings</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>1-hour training session</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>30 days of free support</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>Client portal for implementation</li>
-                </ul>
-                <Button className="w-full" onClick={() => scrollToSection("contact")}>Get Started</Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black border-primary hover:border-primary/80 card-3d reveal">
-              <CardContent className="p-6">
-                <h3 className="font-orbitron text-xl font-bold mb-2">Plus Package</h3>
-                <div className="text-3xl font-bold text-primary mb-4">$7,500</div>
-                <ul className="space-y-2 mb-6 text-sm">
-                  <li><i className="fas fa-check text-primary mr-2"></i>Up to 3 products from our offerings</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>3-hour training session</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>30 days of free support</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>Client portal for implementation</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>Playbook or user guide</li>
-                </ul>
-                <Button className="w-full" onClick={() => scrollToSection("contact")}>Get Started</Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black border-primary/30 hover:border-primary transition-colors card-3d reveal">
-              <CardContent className="p-6">
-                <h3 className="font-orbitron text-xl font-bold mb-2">Premium Package</h3>
-                <div className="text-3xl font-bold text-primary mb-4">$15,000</div>
-                <ul className="space-y-2 mb-6 text-sm">
-                  <li><i className="fas fa-check text-primary mr-2"></i>3-5 products (Complete AI solution)</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>3-hour training session</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>30 days of free priority support</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>Client portal for implementation</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>Advanced integrations</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>Custom automation workflows</li>
-                </ul>
-                <Button className="w-full" onClick={() => scrollToSection("contact")}>Get Started</Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black border-primary/30 hover:border-primary transition-colors card-3d reveal">
-              <CardContent className="p-6">
-                <h3 className="font-orbitron text-xl font-bold mb-2">Enterprise Package</h3>
-                <div className="text-3xl font-bold text-primary mb-4">Call for Pricing</div>
-                <ul className="space-y-2 mb-6 text-sm">
-                  <li><i className="fas fa-check text-primary mr-2"></i>More than 5 products</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>Fully customized enterprise solution</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>Tailored training & support</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>Advanced integrations</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>Custom automation workflows</li>
-                  <li><i className="fas fa-check text-primary mr-2"></i>Dedicated account manager</li>
-                </ul>
-                <Button className="w-full" onClick={() => scrollToSection("contact")}>Contact Us</Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="max-w-2xl mx-auto bg-background border-primary/20 reveal">
-            <CardContent className="p-6 text-center">
-              <i className="fas fa-credit-card text-4xl text-primary mb-4"></i>
-              <h3 className="font-orbitron text-xl font-bold mb-2">Financing Available</h3>
-              <p className="text-muted-foreground">Flexible payment options to help you get started with AI automation today. Contact us to learn about our financing programs.</p>
-            </CardContent>
-          </Card>
-
-          {/* Optional Add-Ons */}
-          <div className="mt-16 max-w-4xl mx-auto reveal">
-            <h3 className="font-orbitron text-2xl font-bold mb-6 text-center">Optional Add-Ons</h3>
-            <Card className="bg-background border-primary/20">
-              <CardContent className="p-6">
-                <ul className="space-y-3 text-sm">
-                  <li className="flex justify-between items-start">
-                    <span><strong>Custom Integration:</strong> $150/hr (e.g., syncing with niche tools or bespoke automation workflows) (Doesn't include 3rd party fees)</span>
-                  </li>
-                  <li className="flex justify-between items-start">
-                    <span><strong>Automation and AI development time:</strong> $200/hr (for less than 8 hours of work)</span>
-                  </li>
-                  <li className="flex justify-between items-start">
-                    <span><strong>Training:</strong> $300/hour (For larger teams or deep dives into specific processes)</span>
-                  </li>
-                  <li className="flex justify-between items-start">
-                    <span><strong>Fractional Revenue and AI Architect:</strong> $4000/Month 15 hours per month</span>
-                  </li>
-                  <li className="flex justify-between items-start">
-                    <span><strong>Additional AI Credits:</strong> $15 per month for every 1000 AI credits</span>
-                  </li>
-                  <li className="flex justify-between items-start">
-                    <span><strong>Additional Workflow:</strong> $75 per workflow per month</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-
         </div>
       </section>
 
@@ -687,110 +617,134 @@ export default function Home() {
         <div className="container">
           <div className="text-center mb-12 reveal">
             <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
-              CONTACT <span className="text-primary neon-glow">US</span>
+              LET'S BUILD YOUR <span className="text-primary neon-glow">AI WORKFORCE</span>
             </h2>
             <div className="w-24 h-1 bg-primary mx-auto"></div>
           </div>
 
-          <div className="max-w-2xl mx-auto text-center">
+          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12">
             <div className="reveal">
-              <h3 className="font-orbitron text-2xl font-bold mb-4">Get In Touch</h3>
-              <p className="text-lg mb-8">Ready to revolutionize your business with AI? Contact us today to schedule a consultation.</p>
-              
-              <div className="space-y-6 mb-8">
-                <div className="flex items-center justify-center gap-3">
-                  <i className="fas fa-phone text-primary text-xl"></i>
+              <h3 className="font-orbitron text-2xl font-bold mb-6 text-white">Get In Touch</h3>
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i className="fas fa-phone text-primary"></i>
+                  </div>
                   <div>
-                    <a href="tel:888-451-2290" className="hover:text-primary transition-colors font-bold text-lg">
+                    <p className="text-sm text-gray-400">Phone</p>
+                    <a href="tel:888-451-2290" className="text-lg font-bold text-primary hover:text-primary/80 transition-colors">
                       888-451-2290
                     </a>
-                    <p className="text-sm text-muted-foreground">Want to talk to an AI agent? <em>Call this number!</em></p>
                   </div>
                 </div>
-                <div className="flex items-center justify-center gap-3">
-                  <i className="fas fa-envelope text-primary text-xl"></i>
-                  <a href="mailto:support@gtmplanetary.com" className="hover:text-primary transition-colors text-lg">
-                    support@gtmplanetary.com
-                  </a>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i className="fas fa-envelope text-primary"></i>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Email</p>
+                    <a href="mailto:wyatt@gtmplanetary.com" className="text-lg font-bold text-primary hover:text-primary/80 transition-colors">
+                      wyatt@gtmplanetary.com
+                    </a>
+                  </div>
                 </div>
-                <div className="flex items-center justify-center gap-3">
-                  <i className="fas fa-globe text-primary text-xl"></i>
-                  <span className="text-lg">www.gtmplanetary.com</span>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i className="fas fa-globe text-primary"></i>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Website</p>
+                    <a href="https://gtmplanetary.com" target="_blank" rel="noopener noreferrer" className="text-lg font-bold text-primary hover:text-primary/80 transition-colors">
+                      gtmplanetary.com
+                    </a>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex gap-4 justify-center">
-                <a href="https://www.linkedin.com/company/gtm-planetary/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors">
-                  <i className="fab fa-linkedin text-primary text-xl"></i>
-                </a>
-                <a href="https://www.facebook.com/people/GTM-Planetary/61574822383365/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors">
-                  <i className="fab fa-facebook text-primary text-xl"></i>
-                </a>
-                <a href="https://x.com/GTMPlanetary" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors">
-                  <i className="fab fa-twitter text-primary text-xl"></i>
-                </a>
-                <a href="https://www.instagram.com/gtm_planetary?igsh=OWQ4aTQ3dXJ2bGFq&utm_source=qr" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors">
-                  <i className="fab fa-instagram text-primary text-xl"></i>
-                </a>
-              </div>
+            <div className="reveal">
+              <h3 className="font-orbitron text-2xl font-bold mb-6 text-white">Send A Message</h3>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                    className="bg-black border-primary/30 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                    className="bg-black border-primary/30 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="bg-black border-primary/30 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="company">Company</Label>
+                  <Input
+                    id="company"
+                    value={formData.company}
+                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                    className="bg-black border-primary/30 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="message">Message</Label>
+                  <Textarea
+                    id="message"
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    required
+                    rows={4}
+                    className="bg-black border-primary/30 focus:border-primary"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full font-orbitron uppercase tracking-wider bg-primary hover:bg-primary/90"
+                  disabled={contactMutation.isPending}
+                >
+                  {contactMutation.isPending ? "Sending..." : "Send Message"}
+                </Button>
+              </form>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-background border-t border-border">
+      <footer className="py-8 bg-black border-t border-border">
         <div className="container">
-          <div className="flex flex-col items-center mb-8">
-            <img src="/logo.png" alt="GTM Planetary Logo" className="h-16 mb-6" />
-            
-            <ul className="flex flex-wrap justify-center gap-6 mb-6">
-              {["home", "about", "services", "solutions", "pricing", "contact"].map((section) => (
-                <li key={section}>
-                  <button
-                    onClick={() => scrollToSection(section)}
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    {section === "solutions" ? "Solutions" : section === "case-studies" ? "Case Studies" : section.charAt(0).toUpperCase() + section.slice(1)}
-                  </button>
-                </li>
-              ))}
-            </ul>
-
-            <div className="flex gap-4 mb-6">
-              <a href="https://www.linkedin.com/company/gtm-planetary/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                <i className="fab fa-linkedin text-xl"></i>
-              </a>
-              <a href="https://www.facebook.com/people/GTM-Planetary/61574822383365/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                <i className="fab fa-facebook text-xl"></i>
-              </a>
-              <a href="https://x.com/GTMPlanetary" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                <i className="fab fa-twitter text-xl"></i>
-              </a>
-              <a href="https://www.instagram.com/gtm_planetary?igsh=OWQ4aTQ3dXJ2bGFq&utm_source=qr" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                <i className="fab fa-instagram text-xl"></i>
-              </a>
-            </div>
-          </div>
-
-          <div className="text-center text-sm text-muted-foreground">
-            <p>&copy; 2026 GTM Planetary. All rights reserved.</p>
-            <div className="mt-3 flex justify-center gap-4">
-              <button onClick={() => setLocation("/blog")} className="text-white hover:text-primary transition-colors">
-                Blog
-              </button>
-              <span className="text-white">|</span>
-              <button onClick={() => setLocation("/privacy-policy")} className="text-white hover:text-primary transition-colors">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-400">
+              © 2026 GTM Planetary LLC. All rights reserved.
+            </p>
+            <div className="flex gap-6">
+              <a href="#" className="text-sm text-gray-400 hover:text-primary transition-colors">
                 Privacy Policy
-              </button>
-              <span className="text-white">|</span>
-              <button onClick={() => setLocation("/terms-and-conditions")} className="text-white hover:text-primary transition-colors">
+              </a>
+              <a href="#" className="text-sm text-gray-400 hover:text-primary transition-colors">
                 Terms & Conditions
-              </button>
-              <span className="text-muted-foreground/20">|</span>
-              <button onClick={() => setLocation("/admin/blog")} className="text-muted-foreground/20 hover:text-muted-foreground/40 transition-colors text-xs">
+              </a>
+              <a href="/admin/blog" className="text-sm text-gray-400 hover:text-primary transition-colors opacity-20">
                 ·
-              </button>
+              </a>
             </div>
           </div>
         </div>
