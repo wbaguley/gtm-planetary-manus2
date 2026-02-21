@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,15 +8,23 @@ import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { Scene3D } from "@/components/Scene3D";
 import { PainPointsScene } from "@/components/PainPointsScene";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [expandedPainPoint, setExpandedPainPoint] = useState<string | null>(null);
   const [scrollY, setScrollY] = useState(0);
+  const [heroProgress, setHeroProgress] = useState(0);
+  const [painProgress, setPainProgress] = useState(0);
   const particlesInitialized = useRef(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const painRef = useRef<HTMLDivElement>(null);
+  const capabilitiesRef = useRef<HTMLDivElement>(null);
 
   const contactMutation = trpc.contact.submit.useMutation({
     onSuccess: () => {
@@ -30,11 +37,7 @@ export default function Home() {
   });
 
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    message: "",
+    name: "", email: "", phone: "", company: "", message: "",
   });
 
   // AI Capabilities for floating cards
@@ -43,50 +46,50 @@ export default function Home() {
       id: "voice",
       icon: "fa-phone-volume",
       title: "Voice AI Agents",
-      shortDesc: "Autonomous call handling",
-      fullDesc: "Autonomous voice agents that answer calls, qualify leads, book appointments, dispatch technicians, and resolve customer issues—without human intervention. Trained on your scripts, pricing, and service catalog. Works 24/7 with zero turnover.",
-      color: "from-purple-500 to-pink-500"
+      desc: "Autonomous call handling, lead qualification, appointment booking, and technician dispatch. Trained on YOUR scripts and pricing.",
+      color: "from-purple-500 to-pink-500",
+      borderColor: "border-purple-500/40",
     },
     {
       id: "document",
       icon: "fa-file-invoice",
-      title: "Document Processing Agents",
-      shortDesc: "Autonomous data extraction",
-      fullDesc: "Agents that read invoices, contracts, permits, and job tickets—extracting data, updating your CRM, flagging discrepancies, and routing approvals automatically. Fine-tuned on trade documents (change orders, permits, material lists). Processes hundreds per hour.",
-      color: "from-cyan-500 to-blue-500"
+      title: "Document Processing",
+      desc: "Reads invoices, contracts, permits—extracting data, updating CRM, routing approvals. Fine-tuned on trade documents.",
+      color: "from-cyan-500 to-blue-500",
+      borderColor: "border-cyan-500/40",
     },
     {
       id: "scheduling",
       icon: "fa-calendar-check",
-      title: "Scheduling & Dispatch Agents",
-      shortDesc: "Autonomous route optimization",
-      fullDesc: "Agents that schedule jobs, optimize routes, dispatch technicians, and rebalance workloads in real-time. Trained on your service area, traffic patterns, and technician skill sets. Reduces drive time by 30% and increases daily job capacity.",
-      color: "from-green-500 to-emerald-500"
+      title: "Scheduling & Dispatch",
+      desc: "Schedules jobs, optimizes routes, dispatches techs, rebalances workloads in real-time. Reduces drive time by 30%.",
+      color: "from-green-500 to-emerald-500",
+      borderColor: "border-green-500/40",
     },
     {
       id: "bidding",
       icon: "fa-search-dollar",
-      title: "Bidding & Estimating Agents",
-      shortDesc: "Autonomous proposal generation",
-      fullDesc: "Agents that monitor contract boards, generate estimates, submit bids, and follow up on proposals—without human input. Fine-tuned on your historical win rates, material costs, and labor pricing. Wins more contracts while you focus on execution.",
-      color: "from-orange-500 to-red-500"
+      title: "Bidding & Estimating",
+      desc: "Monitors contract boards, generates estimates, submits bids automatically. Fine-tuned on your win rates and pricing.",
+      color: "from-orange-500 to-red-500",
+      borderColor: "border-orange-500/40",
     },
     {
       id: "customer",
       icon: "fa-users-cog",
-      title: "Customer Lifecycle Agents",
-      shortDesc: "Proactive relationship management",
-      fullDesc: "Agents that analyze service history, predict maintenance needs, send proactive reminders, identify upsell opportunities, and nurture leads automatically. Trained on your customer data and service intervals. Turns one-time jobs into recurring revenue.",
-      color: "from-violet-500 to-purple-500"
+      title: "Customer Lifecycle",
+      desc: "Predicts maintenance needs, sends proactive reminders, identifies upsells. Turns one-time jobs into recurring revenue.",
+      color: "from-violet-500 to-purple-500",
+      borderColor: "border-violet-500/40",
     },
     {
-      id: "copilot",
-      icon: "fa-robot",
+      id: "models",
+      icon: "fa-brain",
       title: "Custom Fine-Tuned Models",
-      shortDesc: "Trained on YOUR industry",
-      fullDesc: "Custom AI models trained on HVAC service codes, plumbing regulations, electrical specs, or construction workflows. Not generic ChatGPT—models that understand YOUR trade, YOUR processes, YOUR data. Connects to all your systems and executes tasks autonomously.",
-      color: "from-pink-500 to-rose-500"
-    }
+      desc: "Trained on HVAC codes, plumbing regs, electrical specs. Not generic ChatGPT—YOUR trade, YOUR data, YOUR processes.",
+      color: "from-pink-500 to-rose-500",
+      borderColor: "border-pink-500/40",
+    },
   ];
 
   // Trade Pain Points
@@ -97,7 +100,6 @@ export default function Home() {
       title: "Job Management Chaos",
       problem: "Missed deadlines. Scheduling nightmares. No visibility into who's doing what.",
       solution: "AI agents that schedule, dispatch, and track every job in real-time. Complete visibility across your entire operation.",
-      color: "border-red-500"
     },
     {
       id: "systems",
@@ -105,7 +107,6 @@ export default function Home() {
       title: "System Overload",
       problem: "5-10 tools that don't talk. Entering the same data 4 times. Information silos.",
       solution: "One AI copilot that connects everything. Ask it anything, get instant answers from all your systems.",
-      color: "border-orange-500"
     },
     {
       id: "cashflow",
@@ -113,7 +114,6 @@ export default function Home() {
       title: "Cash Flow Crunch",
       problem: "Slow payments. Can't track profitability per job. Financial blind spots.",
       solution: "AI that tracks every dollar, automates invoicing, and predicts cash flow. Get paid faster.",
-      color: "border-yellow-500"
     },
     {
       id: "contracts",
@@ -121,7 +121,6 @@ export default function Home() {
       title: "Contract Hunting",
       problem: "Manual bidding. Leads slip away. No follow-up system.",
       solution: "AI agents that find contracts, generate bids, and nurture leads automatically. Never miss an opportunity.",
-      color: "border-green-500"
     },
     {
       id: "admin",
@@ -129,7 +128,6 @@ export default function Home() {
       title: "Admin Time Sink",
       problem: "60% of your day on paperwork instead of billable work.",
       solution: "AI handles quotes, invoices, follow-ups, and CRM updates while you work. Reclaim your time.",
-      color: "border-blue-500"
     },
     {
       id: "scaling",
@@ -137,7 +135,6 @@ export default function Home() {
       title: "Scaling Wall",
       problem: "Can't grow without adding headcount. 6-month ramp time. Turnover risk.",
       solution: "AI workforce scales instantly. No hiring. No training. No turnover. Deploy agents in days, not months.",
-      color: "border-indigo-500"
     },
     {
       id: "service",
@@ -145,7 +142,6 @@ export default function Home() {
       title: "Customer Service Gaps",
       problem: "Overwhelmed front desk. Slow response times. Calls go to voicemail.",
       solution: "AI voice agents answer every call, book appointments, and handle FAQs 24/7. Zero missed calls.",
-      color: "border-purple-500"
     },
     {
       id: "tech",
@@ -153,8 +149,7 @@ export default function Home() {
       title: "Tech Resistance",
       problem: "Stuck on paper and spreadsheets. New systems are too complicated.",
       solution: "Just talk to your AI copilot. No training needed. Works like a team member, not software.",
-      color: "border-pink-500"
-    }
+    },
   ];
 
   const scrollToSection = (sectionId: string) => {
@@ -173,111 +168,98 @@ export default function Home() {
     contactMutation.mutate(formData);
   };
 
-  // Parallax scroll effect
+  // Scroll tracking
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // GSAP ScrollTrigger for pinned sections
+  useEffect(() => {
+    // Hero section pin - morphing object stays while you scroll
+    if (heroRef.current) {
+      ScrollTrigger.create({
+        trigger: heroRef.current,
+        start: "top top",
+        end: "+=200%",
+        pin: true,
+        scrub: 1,
+        onUpdate: (self) => {
+          setHeroProgress(self.progress);
+        },
+      });
+    }
+
+    // Pain points section pin - longer duration to reveal all 8 pain points
+    if (painRef.current) {
+      ScrollTrigger.create({
+        trigger: painRef.current,
+        start: "top top",
+        end: "+=300%",
+        pin: true,
+        scrub: 0.8,
+        onUpdate: (self) => {
+          setPainProgress(self.progress);
+        },
+      });
+    }
+
+    // Capabilities section reveal animations
+    if (capabilitiesRef.current) {
+      const cards = capabilitiesRef.current.querySelectorAll(".cap-card");
+      cards.forEach((card, i) => {
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 60, scale: 0.9 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.8,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      });
+    }
+
+    return () => {
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
   }, []);
 
   // Particles.js initialization
   useEffect(() => {
-    if (!particlesInitialized.current && typeof window !== 'undefined') {
+    if (!particlesInitialized.current && typeof window !== "undefined") {
       particlesInitialized.current = true;
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js';
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
       script.async = true;
       script.onload = () => {
         if ((window as any).particlesJS) {
-          (window as any).particlesJS('particles-js', {
-        particles: {
-          number: {
-            value: 80,
-            density: {
-              enable: true,
-              value_area: 800
-            }
-          },
-          color: {
-            value: '#ad18fc'
-          },
-          shape: {
-            type: 'circle',
-            stroke: {
-              width: 0,
-              color: '#000000'
-            }
-          },
-          opacity: {
-            value: 0.5,
-            random: true,
-            anim: {
-              enable: true,
-              speed: 1,
-              opacity_min: 0.1,
-              sync: false
-            }
-          },
-          size: {
-            value: 3,
-            random: true,
-            anim: {
-              enable: true,
-              speed: 2,
-              size_min: 0.1,
-              sync: false
-            }
-          },
-          line_linked: {
-            enable: true,
-            distance: 150,
-            color: '#ad18fc',
-            opacity: 0.5,
-            width: 1
-          },
-          move: {
-            enable: true,
-            speed: 1,
-            direction: 'none',
-            random: true,
-            straight: false,
-            out_mode: 'out',
-            bounce: false,
-            attract: {
-              enable: true,
-              rotateX: 600,
-              rotateY: 1200
-            }
-          }
-        },
-        interactivity: {
-          detect_on: 'canvas',
-          events: {
-            onhover: {
-              enable: true,
-              mode: 'grab'
+          (window as any).particlesJS("particles-js", {
+            particles: {
+              number: { value: 60, density: { enable: true, value_area: 900 } },
+              color: { value: "#ad18fc" },
+              shape: { type: "circle" },
+              opacity: { value: 0.4, random: true, anim: { enable: true, speed: 0.8, opacity_min: 0.1 } },
+              size: { value: 2.5, random: true, anim: { enable: true, speed: 1.5, size_min: 0.1 } },
+              line_linked: { enable: true, distance: 150, color: "#ad18fc", opacity: 0.3, width: 0.8 },
+              move: { enable: true, speed: 0.8, direction: "none", random: true, straight: false, out_mode: "out" },
             },
-            onclick: {
-              enable: true,
-              mode: 'push'
+            interactivity: {
+              detect_on: "canvas",
+              events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" }, resize: true },
+              modes: { grab: { distance: 140, line_linked: { opacity: 0.6 } }, push: { particles_nb: 3 } },
             },
-            resize: true
-          },
-          modes: {
-            grab: {
-              distance: 140,
-              line_linked: {
-                opacity: 1
-              }
-            },
-            push: {
-              particles_nb: 4
-            }
-          }
-        },
-        retina_detect: true
+            retina_detect: true,
           });
         }
       };
@@ -285,34 +267,35 @@ export default function Home() {
     }
   }, []);
 
-  // Scroll reveal animation
+  // Scroll reveal animation for non-pinned sections
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-          }
+          if (entry.isIntersecting) entry.target.classList.add("active");
         });
       },
       { threshold: 0.1 }
     );
-
-    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
-
+    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, []);
+
+  // Determine which pain points to show based on scroll progress
+  // First 10% shows the heading, then each pain point gets ~11% of the remaining scroll
+  const adjustedProgress = Math.max(0, (painProgress - 0.05) / 0.9);
+  const visiblePainPoints = Math.min(painPoints.length, Math.floor(adjustedProgress * (painPoints.length + 1)) + 1);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
             <div className="flex-shrink-0">
               <img src="/logo.png" alt="GTM Planetary Logo" className="h-12" />
             </div>
-            
+
             <button
               className="md:hidden text-foreground ml-auto"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -321,7 +304,11 @@ export default function Home() {
             </button>
 
             <div className="flex items-center gap-6">
-              <ul className={`${mobileMenuOpen ? 'flex' : 'hidden'} md:flex flex-col md:flex-row absolute md:relative top-20 md:top-0 left-0 right-0 bg-background md:bg-transparent border-b md:border-0 border-border md:space-x-8 p-4 md:p-0`}>
+              <ul
+                className={`${
+                  mobileMenuOpen ? "flex" : "hidden"
+                } md:flex flex-col md:flex-row absolute md:relative top-20 md:top-0 left-0 right-0 bg-background md:bg-transparent border-b md:border-0 border-border md:space-x-8 p-4 md:p-0`}
+              >
                 {["home", "capabilities", "solutions", "how-it-works", "about", "blog", "contact"].map((section) => (
                   <li key={section}>
                     {section === "blog" ? (
@@ -338,14 +325,18 @@ export default function Home() {
                           activeSection === section ? "text-primary" : "text-foreground hover:text-primary"
                         }`}
                       >
-                        {section === "capabilities" ? "AI Capabilities" : section === "how-it-works" ? "How It Works" : section}
+                        {section === "capabilities"
+                          ? "AI Capabilities"
+                          : section === "how-it-works"
+                          ? "How It Works"
+                          : section}
                       </button>
                     )}
                   </li>
                 ))}
               </ul>
-              <a 
-                href="tel:888-451-2290" 
+              <a
+                href="tel:888-451-2290"
                 className="hidden md:flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary rounded-lg hover:bg-primary/20 transition-all animate-shake-periodic"
               >
                 <i className="fas fa-phone text-primary"></i>
@@ -356,33 +347,46 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section with 3D Morphing Object */}
-      <section id="home" className="relative min-h-screen flex items-center overflow-hidden pt-20">
-        {/* Parallax Background Layers */}
-        <div 
-          className="absolute inset-0 grid-bg" 
-          style={{ transform: `translateY(${scrollY * 0.5}px)` }}
-        ></div>
-        <div 
-          id="particles-js" 
-          className="absolute inset-0"
-          style={{ transform: `translateY(${scrollY * 0.3}px)` }}
-        ></div>
-        
-        {/* Hero Content - Text Left, 3D Object Right */}
+      {/* ═══════════════════════════════════════════════════════════════
+          HERO SECTION — Pinned, text left, 3D morphing object right
+         ═══════════════════════════════════════════════════════════════ */}
+      <section
+        ref={heroRef}
+        id="home"
+        className="relative h-screen flex items-center overflow-hidden"
+      >
+        {/* Parallax Background */}
+        <div className="absolute inset-0 grid-bg" style={{ transform: `translateY(${heroProgress * 100}px)` }} />
+        <div id="particles-js" className="absolute inset-0" style={{ transform: `translateY(${heroProgress * 60}px)` }} />
+
+        {/* Subtle gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/40 to-transparent z-[1]" />
+
+        {/* Hero Content */}
         <div className="container relative z-10 px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Text Content */}
-            <div className="space-y-8">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            {/* Left: Text Content — fades/moves based on scroll progress */}
+            <div
+              className="space-y-8"
+              style={{
+                opacity: 1 - heroProgress * 1.5,
+                transform: `translateY(${heroProgress * -80}px)`,
+              }}
+            >
+              <div className="inline-block px-4 py-1.5 border border-primary/40 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-4">
+                AI Workforce for Trades
+              </div>
               <h1 className="font-orbitron text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight">
                 STOP HIRING.
                 <br />
-                <span className="glitch neon-glow inline-block" data-text="START DEPLOYING.">START DEPLOYING.</span>
+                <span className="glitch neon-glow inline-block" data-text="START DEPLOYING.">
+                  START DEPLOYING.
+                </span>
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-xl">
+              <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
                 Custom AI models and autonomous agents that handle operations, bidding, scheduling, and customer service—so you can focus on the work that matters.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   size="lg"
@@ -402,308 +406,361 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right: 3D Morphing Object */}
-            <div className="h-[500px] lg:h-[600px] relative">
-              <Scene3D scrollProgress={scrollY / 1000} className="rounded-lg" />
+            {/* Right: 3D Morphing Object — stays visible longer */}
+            <div
+              className="h-[500px] lg:h-[600px] relative"
+              style={{
+                transform: `scale(${1 + heroProgress * 0.15}) translateY(${heroProgress * -40}px)`,
+              }}
+            >
+              <Scene3D scrollProgress={heroProgress * 3} className="rounded-lg" />
             </div>
           </div>
         </div>
-        
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center animate-bounce">
-          <span className="block text-sm mb-2">Scroll Down</span>
-          <i className="fas fa-chevron-down text-primary"></i>
+
+        {/* Scroll indicator */}
+        <div
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center z-10"
+          style={{ opacity: 1 - heroProgress * 4 }}
+        >
+          <span className="block text-sm mb-2 text-muted-foreground">Scroll to explore</span>
+          <div className="w-6 h-10 border-2 border-primary/50 rounded-full mx-auto flex justify-center">
+            <div className="w-1.5 h-3 bg-primary rounded-full mt-2 animate-bounce" />
+          </div>
         </div>
       </section>
 
-      {/* Pain Points Section - Scifi Retro Layout */}
-      <section id="solutions" className="py-20 bg-black relative overflow-hidden">
-        {/* Background Grid Effect */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'linear-gradient(rgba(168, 85, 247, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(168, 85, 247, 0.1) 1px, transparent 1px)',
-            backgroundSize: '50px 50px'
-          }}></div>
+      {/* ═══════════════════════════════════════════════════════════════
+          AI CAPABILITIES — Floating cards with staggered reveal
+         ═══════════════════════════════════════════════════════════════ */}
+      <section id="capabilities" ref={capabilitiesRef} className="py-24 bg-black relative overflow-hidden">
+        {/* Subtle grid background */}
+        <div className="absolute inset-0 opacity-10">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 1px 1px, rgba(168,85,247,0.3) 1px, transparent 0)",
+              backgroundSize: "40px 40px",
+            }}
+          />
         </div>
 
         <div className="container relative z-10">
-          <div className="text-center mb-16 reveal">
+          <div className="text-center mb-16">
+            <div className="inline-block px-4 py-1.5 border border-primary/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6">
+              What We Deploy
+            </div>
             <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
-              WHAT'S <span className="text-primary neon-glow">HOLDING YOU BACK?</span>
+              YOUR <span className="text-primary neon-glow">AI WORKFORCE</span>
             </h2>
-            <div className="w-24 h-1 bg-primary mx-auto mb-6"></div>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              These are the frustrations we hear from trade businesses every day. Sound familiar?
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              Not chatbots. Not software. Autonomous agents and custom models that execute real work.
             </p>
           </div>
 
-          {/* Scifi Retro Layout: Central morphing object with pain points around it */}
-          <div className="relative">
-            {/* Central 3D Morphing Object */}
-            <div className="w-full max-w-md mx-auto h-[400px] mb-12">
-              <PainPointsScene scrollProgress={scrollY / 800} className="rounded-lg" />
-            </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {aiCapabilities.map((cap, i) => (
+              <div
+                key={cap.id}
+                className={`cap-card group relative bg-black/80 backdrop-blur-sm border ${cap.borderColor} rounded-xl p-6 hover:border-primary/60 transition-all duration-500 cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10`}
+              >
+                {/* Gradient accent top */}
+                <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${cap.color} rounded-t-xl opacity-60 group-hover:opacity-100 transition-opacity`} />
 
-            {/* Pain Points - Terminal Style Cards */}
-            <div className="space-y-4">
-              {painPoints.map((point, index) => (
+                <div className={`w-14 h-14 bg-gradient-to-br ${cap.color} rounded-lg flex items-center justify-center mb-4 shadow-lg`}>
+                  <i className={`fas ${cap.icon} text-xl text-white`}></i>
+                </div>
+                <h3 className="font-orbitron text-lg font-bold text-white mb-3">{cap.title}</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">{cap.desc}</p>
+
+                {/* Hover glow effect */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${cap.color} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity duration-500`} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          PAIN POINTS — Pinned section, scifi retro reveal
+         ═══════════════════════════════════════════════════════════════ */}
+      <section
+        ref={painRef}
+        id="solutions"
+        className="relative h-screen flex items-center overflow-hidden bg-black"
+      >
+        {/* Animated scan line */}
+        <div
+          className="absolute inset-0 pointer-events-none z-20"
+          style={{
+            background: `linear-gradient(transparent ${painProgress * 100}%, rgba(168,85,247,0.05) ${painProgress * 100 + 0.5}%, transparent ${painProgress * 100 + 1}%)`,
+          }}
+        />
+
+        {/* Grid background */}
+        <div className="absolute inset-0 opacity-15">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(168,85,247,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(168,85,247,0.08) 1px, transparent 1px)",
+              backgroundSize: "60px 60px",
+              transform: `translateY(${painProgress * 30}px)`,
+            }}
+          />
+        </div>
+
+        <div className="container relative z-10 px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Left: Pain points list — revealed one by one */}
+            <div className="space-y-2 max-h-[80vh] overflow-hidden">
+              <div className="mb-8">
+                <div className="inline-block px-4 py-1.5 border border-red-500/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-red-400 mb-4">
+                  Sound Familiar?
+                </div>
+                <h2 className="font-orbitron text-3xl md:text-4xl font-bold">
+                  WHAT'S <span className="text-red-400">HOLDING YOU BACK?</span>
+                </h2>
+              </div>
+
+              {painPoints.map((point, index) => {
+                const isVisible = index < visiblePainPoints;
+                const isActive = index === visiblePainPoints - 1;
+                return (
                 <div
                   key={point.id}
-                  className="reveal cursor-pointer transition-all duration-300 hover:translate-x-2"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className="cursor-pointer transition-all duration-700 ease-out"
+                  style={{
+                    opacity: isVisible ? 1 : 0,
+                    transform: `translateX(${isVisible ? 0 : -40}px) scale(${isActive ? 1.02 : 1})`,
+                    maxHeight: isVisible ? "200px" : "0px",
+                    overflow: "hidden",
+                    transitionDelay: isVisible ? `${index * 50}ms` : "0ms",
+                  }}
                   onClick={() => setExpandedPainPoint(expandedPainPoint === point.id ? null : point.id)}
                 >
-                  <div className={`bg-black/90 border-l-4 ${point.color} p-6 hover:bg-black/95 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20`}>
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-primary/20 rounded flex items-center justify-center flex-shrink-0">
-                        <i className={`fas ${point.icon} text-xl text-primary`}></i>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-mono text-xs text-primary">&gt;_</span>
-                          <h3 className="font-orbitron text-lg font-bold text-white">{point.title}</h3>
-                        </div>
-                        <div className="space-y-2">
-                          <div>
-                            <p className="font-mono text-xs text-red-400 uppercase tracking-wider mb-1">ERROR:</p>
-                            <p className="text-sm text-gray-400">{point.problem}</p>
-                          </div>
-                          {expandedPainPoint === point.id && (
-                            <div className="mt-3 pt-3 border-t border-primary/30 animate-in fade-in slide-in-from-top-2 duration-300">
-                              <p className="font-mono text-xs text-green-400 uppercase tracking-wider mb-1">SOLUTION:</p>
-                              <p className="text-sm text-gray-300">{point.solution}</p>
-                            </div>
-                          )}
-                        </div>
-                        <div className="font-mono text-xs text-primary mt-3">
-                          {expandedPainPoint === point.id ? '[COLLAPSE]' : '[EXPAND]'}
-                        </div>
-                      </div>
+                  <div className={`flex items-start gap-3 py-3 px-4 rounded-lg hover:bg-white/5 transition-all duration-500 group ${isActive ? 'bg-white/5 border-l-2 border-primary' : 'border-l-2 border-transparent'}`}>
+                    <div className="w-8 h-8 bg-red-500/10 border border-red-500/20 rounded flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-red-500/20 transition-colors">
+                      <i className={`fas ${point.icon} text-sm text-red-400`}></i>
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[10px] text-red-400/60">&gt;_</span>
+                        <h3 className="font-orbitron text-sm font-bold text-white">{point.title}</h3>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1 leading-relaxed">{point.problem}</p>
+                      {expandedPainPoint === point.id && (
+                        <div className="mt-2 pt-2 border-t border-green-500/20">
+                          <p className="text-xs text-green-400/80 leading-relaxed">
+                            <span className="font-mono text-[10px] text-green-500 mr-1">RESOLVE:</span>
+                            {point.solution}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <i className={`fas fa-chevron-${expandedPainPoint === point.id ? "up" : "down"} text-xs text-gray-600 mt-1`}></i>
                   </div>
                 </div>
-              ))}
+                );
+              })}
+            </div>
+
+            {/* Right: 3D Morphing Object */}
+            <div className="h-[500px] lg:h-[600px] relative flex items-center justify-center">
+              <PainPointsScene scrollProgress={painProgress * 4} className="w-full h-full" />
+              {/* Glow backdrop */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div
+                  className="w-64 h-64 rounded-full blur-3xl"
+                  style={{
+                    background: `radial-gradient(circle, rgba(239,68,68,${0.1 + painProgress * 0.15}) 0%, rgba(168,85,247,${0.05 + painProgress * 0.1}) 50%, transparent 70%)`,
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-black">
+      {/* ═══════════════════════════════════════════════════════════════
+          HOW IT WORKS — Three deployment methods
+         ═══════════════════════════════════════════════════════════════ */}
+      <section id="how-it-works" className="py-24 bg-black relative">
         <div className="container">
           <div className="text-center mb-16 reveal">
+            <div className="inline-block px-4 py-1.5 border border-primary/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6">
+              Deployment
+            </div>
             <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
               THREE WAYS TO <span className="text-primary neon-glow">DEPLOY AI</span>
             </h2>
-            <div className="w-24 h-1 bg-primary mx-auto"></div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
-              <CardContent className="p-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-6 mx-auto">
-                  <i className="fas fa-phone-volume text-3xl text-white"></i>
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              {
+                icon: "fa-phone-volume",
+                title: "Autonomous Voice Agents",
+                color: "from-purple-500 to-pink-500",
+                items: [
+                  "Answers calls, qualifies leads, books jobs autonomously",
+                  "Dispatches technicians without escalation",
+                  "Trained on YOUR pricing, services, and scripts",
+                  "Executes tasks, not just conversations",
+                ],
+              },
+              {
+                icon: "fa-cogs",
+                title: "Operational Agents",
+                color: "from-cyan-500 to-blue-500",
+                items: [
+                  "Processes documents, updates CRM, routes approvals",
+                  "Schedules jobs, dispatches techs in real-time",
+                  "Monitors contract boards and submits bids",
+                  "Fine-tuned on trade-specific workflows",
+                ],
+              },
+              {
+                icon: "fa-brain",
+                title: "Custom Fine-Tuned Models",
+                color: "from-green-500 to-emerald-500",
+                items: [
+                  "Trained on HVAC codes, plumbing regs, electrical specs",
+                  "Understands YOUR trade, YOUR processes, YOUR data",
+                  "Not generic ChatGPT—industry-specific intelligence",
+                  "Connects all systems and executes autonomously",
+                ],
+              },
+            ].map((method, i) => (
+              <div key={i} className="reveal group relative bg-black/60 border border-primary/20 rounded-xl p-8 hover:border-primary/50 transition-all duration-500">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className={`w-16 h-16 bg-gradient-to-br ${method.color} rounded-xl flex items-center justify-center mb-6 shadow-lg`}>
+                  <i className={`fas ${method.icon} text-2xl text-white`}></i>
                 </div>
-                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Autonomous Voice Agents</h3>
-                <ul className="space-y-3 text-gray-300">
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Answers calls, qualifies leads, books jobs autonomously</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Dispatches technicians and resolves issues without escalation</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Trained on YOUR pricing, services, and scripts</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Executes tasks, not just conversations</span>
-                  </li>
+                <h3 className="font-orbitron text-xl font-bold mb-5 text-white">{method.title}</h3>
+                <ul className="space-y-3">
+                  {method.items.map((item, j) => (
+                    <li key={j} className="flex items-start gap-2.5 text-gray-400 text-sm">
+                      <i className="fas fa-check text-primary mt-0.5 text-xs"></i>
+                      <span>{item}</span>
+                    </li>
+                  ))}
                 </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
-              <CardContent className="p-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center mb-6 mx-auto">
-                  <i className="fas fa-file-invoice text-3xl text-white"></i>
-                </div>
-                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Operational Agents</h3>
-                <ul className="space-y-3 text-gray-300">
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Processes documents, updates CRM, routes approvals automatically</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Schedules jobs, dispatches techs, rebalances workloads in real-time</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Monitors contract boards and submits bids automatically</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Fine-tuned on trade-specific workflows and data</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black border-primary/30 hover:border-primary transition-all duration-300 card-3d reveal">
-              <CardContent className="p-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mb-6 mx-auto">
-                  <i className="fas fa-robot text-3xl text-white"></i>
-                </div>
-                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Custom Fine-Tuned Models</h3>
-                <ul className="space-y-3 text-gray-300">
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Trained on HVAC codes, plumbing regs, electrical specs</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Understands YOUR trade, YOUR processes, YOUR data</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Not generic ChatGPT—industry-specific intelligence</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Connects all systems and executes tasks autonomously</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* About Section - Updated Messaging */}
-      <section id="about" className="py-20 bg-black">
-        <div className="container">
+      {/* ═══════════════════════════════════════════════════════════════
+          ABOUT — Updated messaging
+         ═══════════════════════════════════════════════════════════════ */}
+      <section id="about" className="py-24 bg-black relative">
+        <div className="absolute inset-0 opacity-5">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: "radial-gradient(circle at 50% 50%, rgba(168,85,247,0.15) 0%, transparent 50%)",
+            }}
+          />
+        </div>
+        <div className="container relative z-10">
           <div className="text-center mb-12 reveal">
+            <div className="inline-block px-4 py-1.5 border border-primary/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6">
+              Why GTM Planetary
+            </div>
             <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
               BUILT FOR <span className="text-primary neon-glow">TRADES, NOT TECH COMPANIES</span>
             </h2>
-            <div className="w-24 h-1 bg-primary mx-auto"></div>
           </div>
 
-          <div className="max-w-4xl mx-auto space-y-6 reveal">
-            <p className="text-lg text-gray-300">
+          <div className="max-w-3xl mx-auto space-y-6 reveal">
+            <p className="text-lg text-gray-300 leading-relaxed">
               GTM Planetary builds custom fine-tuned AI models and autonomous operational agents exclusively for trade businesses.
             </p>
-            <p className="text-gray-400">
+            <p className="text-gray-400 leading-relaxed">
               We're not selling chatbots or software subscriptions. We deploy AI agents that execute real work—scheduling jobs, processing invoices, bidding contracts, managing customer lifecycles—without human intervention.
             </p>
-            <p className="text-gray-400">
+            <p className="text-gray-400 leading-relaxed">
               Our models are trained on trade-specific data: HVAC service codes, plumbing regulations, electrical specs, construction workflows. Not generic ChatGPT. Industry-specific intelligence that understands YOUR trade.
             </p>
-            <p className="text-gray-400">
+            <p className="text-gray-400 leading-relaxed">
               Every agent is fine-tuned on your business—your pricing, your processes, your customer data. They don't just answer questions. They complete tasks, make decisions, and improve operations autonomously.
             </p>
-            <p className="text-lg text-primary font-bold mt-8">
-              Stop fighting for hiring budget. Deploy autonomous agents that scale instantly, work 24/7, and execute tasks without supervision.
-            </p>
+            <div className="pt-4 border-t border-primary/20 mt-8">
+              <p className="text-lg text-primary font-bold">
+                Stop fighting for hiring budget. Deploy autonomous agents that scale instantly, work 24/7, and execute tasks without supervision.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-20 bg-black">
+      {/* ═══════════════════════════════════════════════════════════════
+          CONTACT
+         ═══════════════════════════════════════════════════════════════ */}
+      <section id="contact" className="py-24 bg-black relative">
         <div className="container">
           <div className="text-center mb-12 reveal">
+            <div className="inline-block px-4 py-1.5 border border-primary/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6">
+              Get Started
+            </div>
             <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
               LET'S BUILD YOUR <span className="text-primary neon-glow">AI WORKFORCE</span>
             </h2>
-            <div className="w-24 h-1 bg-primary mx-auto"></div>
           </div>
 
           <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12">
             <div className="reveal">
               <h3 className="font-orbitron text-2xl font-bold mb-6 text-white">Get In Touch</h3>
               <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i className="fas fa-phone text-primary"></i>
+                {[
+                  { icon: "fa-phone", label: "Phone", value: "888-451-2290", href: "tel:888-451-2290" },
+                  { icon: "fa-envelope", label: "Email", value: "wyatt@gtmplanetary.com", href: "mailto:wyatt@gtmplanetary.com" },
+                  { icon: "fa-globe", label: "Website", value: "gtmplanetary.com", href: "https://gtmplanetary.com" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-4 group">
+                    <div className="w-12 h-12 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                      <i className={`fas ${item.icon} text-primary`}></i>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wider">{item.label}</p>
+                      <a
+                        href={item.href}
+                        target={item.icon === "fa-globe" ? "_blank" : undefined}
+                        rel={item.icon === "fa-globe" ? "noopener noreferrer" : undefined}
+                        className="text-lg font-bold text-primary hover:text-primary/80 transition-colors"
+                      >
+                        {item.value}
+                      </a>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Phone</p>
-                    <a href="tel:888-451-2290" className="text-lg font-bold text-primary hover:text-primary/80 transition-colors">
-                      888-451-2290
-                    </a>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i className="fas fa-envelope text-primary"></i>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Email</p>
-                    <a href="mailto:wyatt@gtmplanetary.com" className="text-lg font-bold text-primary hover:text-primary/80 transition-colors">
-                      wyatt@gtmplanetary.com
-                    </a>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i className="fas fa-globe text-primary"></i>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Website</p>
-                    <a href="https://gtmplanetary.com" target="_blank" rel="noopener noreferrer" className="text-lg font-bold text-primary hover:text-primary/80 transition-colors">
-                      gtmplanetary.com
-                    </a>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
             <div className="reveal">
               <h3 className="font-orbitron text-2xl font-bold mb-6 text-white">Send A Message</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                    className="bg-black border-primary/30 focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
-                    className="bg-black border-primary/30 focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="bg-black border-primary/30 focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="company">Company</Label>
-                  <Input
-                    id="company"
-                    value={formData.company}
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    className="bg-black border-primary/30 focus:border-primary"
-                  />
-                </div>
+                {[
+                  { id: "name", label: "Name", type: "text", required: true },
+                  { id: "email", label: "Email", type: "email", required: true },
+                  { id: "phone", label: "Phone", type: "tel", required: false },
+                  { id: "company", label: "Company", type: "text", required: false },
+                ].map((field) => (
+                  <div key={field.id}>
+                    <Label htmlFor={field.id}>{field.label}</Label>
+                    <Input
+                      id={field.id}
+                      type={field.type}
+                      value={(formData as any)[field.id]}
+                      onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                      required={field.required}
+                      className="bg-black/50 border-primary/20 focus:border-primary"
+                    />
+                  </div>
+                ))}
                 <div>
                   <Label htmlFor="message">Message</Label>
                   <Textarea
@@ -712,7 +769,7 @@ export default function Home() {
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     required
                     rows={4}
-                    className="bg-black border-primary/30 focus:border-primary"
+                    className="bg-black/50 border-primary/20 focus:border-primary"
                   />
                 </div>
                 <Button
@@ -729,20 +786,18 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 bg-black border-t border-border">
+      <footer className="py-8 bg-black border-t border-border/30">
         <div className="container">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-400">
-              © 2026 GTM Planetary LLC. All rights reserved.
-            </p>
+            <p className="text-sm text-gray-500">© 2026 GTM Planetary LLC. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="#" className="text-sm text-gray-400 hover:text-primary transition-colors">
+              <a href="#" className="text-sm text-gray-500 hover:text-primary transition-colors">
                 Privacy Policy
               </a>
-              <a href="#" className="text-sm text-gray-400 hover:text-primary transition-colors">
+              <a href="#" className="text-sm text-gray-500 hover:text-primary transition-colors">
                 Terms & Conditions
               </a>
-              <a href="/admin/blog" className="text-sm text-gray-400 hover:text-primary transition-colors opacity-20">
+              <a href="/admin/blog" className="text-sm text-gray-500 hover:text-primary transition-colors opacity-20">
                 ·
               </a>
             </div>

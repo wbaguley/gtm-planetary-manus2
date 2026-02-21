@@ -571,3 +571,21 @@
     will-change: transform;
     transition: transform 0.1s ease-out;
   }
+
+  /* Scroll reveal animation */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  .reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Pain point active highlight */
+  .pain-active {
+    border-left: 2px solid oklch(0.6 0.28 295);
+    background: rgba(168, 85, 247, 0.04);
+  }
