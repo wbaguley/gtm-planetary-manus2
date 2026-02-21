@@ -265,3 +265,10 @@
 - [x] Add dwell/plateau time so each shape holds at fully formed state before morphing to next
 - [x] Improve hero shape recognizability (denser outlines, less fill noise)
 - [x] Test scroll pacing feels natural
+
+## Hero Shape Overhaul v3
+- [x] New hero sequence: Orb → Wrench → Hammer → Neural Net → Voice AI → Orb
+- [x] Kill auto-rotation, tie rotation ONLY to scroll progress
+- [x] Make all shapes overly defined with edge-heavy particles (kept 3D z-depth)
+- [x] Same treatment for pain point shapes (scroll-driven rotation)
+- [x] Test and verify shapes are instantly recognizable
