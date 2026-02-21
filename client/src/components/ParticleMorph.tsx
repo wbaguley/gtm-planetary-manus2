@@ -66,114 +66,170 @@ function fillDisk(
 
 // ─── HERO Shape Generators ──────────────────────────────────────────
 
-// 1. HAMMER - clear trade tool silhouette
+// 1. HAMMER - clear trade tool silhouette (edge-heavy for recognizability)
 function hammerPositions(n: number): Float32Array {
   const p = new Float32Array(n * 3);
-  const headCount = Math.floor(n * 0.45);
-  const handleCount = n - headCount;
-  
-  // Hammer head - rectangular block at top
-  for (let i = 0; i < headCount; i++) {
-    const section = Math.random();
-    if (section < 0.7) {
-      // Main head block
-      p[i * 3] = (Math.random() - 0.5) * 1.8;
-      p[i * 3 + 1] = 0.8 + (Math.random() - 0.5) * 0.7;
-      p[i * 3 + 2] = (Math.random() - 0.5) * 0.5;
-    } else {
-      // Claw fork on one side
-      const clawAngle = Math.random() * 0.6 + 0.2;
-      p[i * 3] = -0.9 - Math.random() * 0.4;
-      p[i * 3 + 1] = 0.8 + Math.sin(clawAngle * Math.PI) * 0.5;
-      p[i * 3 + 2] = (Math.random() - 0.5) * 0.3 + (Math.random() > 0.5 ? 0.15 : -0.15);
-    }
-  }
-  
-  // Handle - long shaft going down
-  for (let i = 0; i < handleCount; i++) {
-    const idx = headCount + i;
-    p[idx * 3] = (Math.random() - 0.5) * 0.2;
-    p[idx * 3 + 1] = 0.4 - Math.random() * 2.4;
-    p[idx * 3 + 2] = (Math.random() - 0.5) * 0.2;
-  }
-  return p;
-}
-
-// 2. GEAR/COG - mechanical transition
-function gearPositions(n: number): Float32Array {
-  const p = new Float32Array(n * 3);
-  const outerR = 1.4;
-  const innerR = 0.9;
-  const teeth = 10;
-  const toothH = 0.35;
+  const zSpread = 0.15; // Thin z for cleaner 2D silhouette
   
   for (let i = 0; i < n; i++) {
     const section = Math.random();
-    if (section < 0.15) {
-      // Center hole
-      const angle = Math.random() * Math.PI * 2;
-      const r = 0.25 + (Math.random() - 0.5) * 0.08;
-      p[i * 3] = Math.cos(angle) * r;
-      p[i * 3 + 1] = Math.sin(angle) * r;
-      p[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
+    if (section < 0.35) {
+      // Hammer head OUTLINE - rectangular edges
+      const edge = Math.random();
+      const hw = 0.9, hh = 0.35; // half-width, half-height of head
+      const cy = 1.0; // head center Y
+      if (edge < 0.25) {
+        // Top edge
+        p[i * 3] = (Math.random() - 0.5) * hw * 2;
+        p[i * 3 + 1] = cy + hh + (Math.random() - 0.5) * 0.04;
+      } else if (edge < 0.5) {
+        // Bottom edge
+        p[i * 3] = (Math.random() - 0.5) * hw * 2;
+        p[i * 3 + 1] = cy - hh + (Math.random() - 0.5) * 0.04;
+      } else if (edge < 0.75) {
+        // Left edge
+        p[i * 3] = -hw + (Math.random() - 0.5) * 0.04;
+        p[i * 3 + 1] = cy + (Math.random() - 0.5) * hh * 2;
+      } else {
+        // Right edge
+        p[i * 3] = hw + (Math.random() - 0.5) * 0.04;
+        p[i * 3 + 1] = cy + (Math.random() - 0.5) * hh * 2;
+      }
     } else if (section < 0.55) {
-      // Outer ring with teeth
-      const angle = Math.random() * Math.PI * 2;
-      const toothPhase = (angle / (Math.PI * 2)) * teeth;
-      const inTooth = (toothPhase % 1) < 0.45;
-      const r = inTooth ? outerR + toothH * Math.random() : outerR;
-      p[i * 3] = Math.cos(angle) * (r + (Math.random() - 0.5) * 0.08);
-      p[i * 3 + 1] = Math.sin(angle) * (r + (Math.random() - 0.5) * 0.08);
-      p[i * 3 + 2] = (Math.random() - 0.5) * 0.35;
+      // Head FILL (lighter density)
+      p[i * 3] = (Math.random() - 0.5) * 1.7;
+      p[i * 3 + 1] = 1.0 + (Math.random() - 0.5) * 0.6;
+    } else if (section < 0.65) {
+      // Claw fork on left side
+      const t = Math.random();
+      const angle = Math.PI * 0.7 + t * Math.PI * 0.6;
+      const r = 0.15 + t * 0.35;
+      p[i * 3] = -0.85 + Math.cos(angle) * r;
+      p[i * 3 + 1] = 1.0 + Math.sin(angle) * r;
+    } else if (section < 0.85) {
+      // Handle OUTLINE - two parallel lines
+      const side = Math.random() > 0.5 ? 0.08 : -0.08;
+      p[i * 3] = side + (Math.random() - 0.5) * 0.03;
+      p[i * 3 + 1] = 0.6 - Math.random() * 2.6;
     } else {
-      // Inner body fill
-      const angle = Math.random() * Math.PI * 2;
-      const r = innerR * (0.35 + Math.random() * 0.65);
-      p[i * 3] = Math.cos(angle) * r;
-      p[i * 3 + 1] = Math.sin(angle) * r;
-      p[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
+      // Handle FILL (lighter)
+      p[i * 3] = (Math.random() - 0.5) * 0.15;
+      p[i * 3 + 1] = 0.6 - Math.random() * 2.6;
     }
+    p[i * 3 + 2] = (Math.random() - 0.5) * zSpread;
   }
   return p;
 }
 
-// 3. BRAIN - AI intelligence (improved for clarity)
+// 2. GEAR/COG - mechanical transition (edge-heavy, distinct teeth)
+function gearPositions(n: number): Float32Array {
+  const p = new Float32Array(n * 3);
+  const outerR = 1.3;
+  const teeth = 8;
+  const toothH = 0.4;
+  const toothW = 0.35; // angular width of each tooth
+  const zSpread = 0.15;
+  
+  for (let i = 0; i < n; i++) {
+    const section = Math.random();
+    if (section < 0.12) {
+      // Center hole outline
+      const angle = Math.random() * Math.PI * 2;
+      const r = 0.28 + (Math.random() - 0.5) * 0.04;
+      p[i * 3] = Math.cos(angle) * r;
+      p[i * 3 + 1] = Math.sin(angle) * r;
+    } else if (section < 0.65) {
+      // Outer ring with DISTINCT teeth - edge particles
+      const angle = Math.random() * Math.PI * 2;
+      const toothAngle = (angle / (Math.PI * 2)) * teeth;
+      const toothFrac = toothAngle % 1;
+      const inTooth = toothFrac > 0.15 && toothFrac < 0.15 + toothW / (Math.PI * 2 / teeth);
+      
+      if (inTooth) {
+        // Tooth - rectangular protrusion
+        const toothEdge = Math.random();
+        if (toothEdge < 0.4) {
+          // Tooth tip (outer edge)
+          const r = outerR + toothH;
+          p[i * 3] = Math.cos(angle) * r + (Math.random() - 0.5) * 0.04;
+          p[i * 3 + 1] = Math.sin(angle) * r + (Math.random() - 0.5) * 0.04;
+        } else {
+          // Tooth sides
+          const r = outerR + Math.random() * toothH;
+          p[i * 3] = Math.cos(angle) * r + (Math.random() - 0.5) * 0.03;
+          p[i * 3 + 1] = Math.sin(angle) * r + (Math.random() - 0.5) * 0.03;
+        }
+      } else {
+        // Valley between teeth
+        const r = outerR + (Math.random() - 0.5) * 0.04;
+        p[i * 3] = Math.cos(angle) * r;
+        p[i * 3 + 1] = Math.sin(angle) * r;
+      }
+    } else if (section < 0.8) {
+      // Spokes from center to outer ring
+      const spokeIdx = Math.floor(Math.random() * 6);
+      const spokeAngle = (spokeIdx / 6) * Math.PI * 2;
+      const r = 0.35 + Math.random() * 0.85;
+      p[i * 3] = Math.cos(spokeAngle) * r + (Math.random() - 0.5) * 0.06;
+      p[i * 3 + 1] = Math.sin(spokeAngle) * r + (Math.random() - 0.5) * 0.06;
+    } else {
+      // Inner ring outline
+      const angle = Math.random() * Math.PI * 2;
+      const r = 0.7 + (Math.random() - 0.5) * 0.04;
+      p[i * 3] = Math.cos(angle) * r;
+      p[i * 3 + 1] = Math.sin(angle) * r;
+    }
+    p[i * 3 + 2] = (Math.random() - 0.5) * zSpread;
+  }
+  return p;
+}
+
+// 3. BRAIN - AI intelligence (edge-heavy, clear two-lobe silhouette)
 function brainPositions(n: number): Float32Array {
   const p = new Float32Array(n * 3);
+  const zSpread = 0.18;
   for (let i = 0; i < n; i++) {
     const side = Math.random() > 0.5 ? 1 : -1;
     const section = Math.random();
     
-    if (section < 0.6) {
-      // Brain hemispheres - two bumpy lobes
+    if (section < 0.45) {
+      // Brain hemisphere OUTLINES - surface shell only
       const phi = Math.acos(-1 + 2 * Math.random());
       const theta = Math.random() * Math.PI * 2;
-      const baseR = 1.1;
-      const bumps = Math.sin(theta * 5) * 0.12 + Math.sin(phi * 7) * 0.08;
+      const baseR = 1.05;
+      const bumps = Math.sin(theta * 4) * 0.15 + Math.sin(phi * 5) * 0.1;
       const r = baseR + bumps;
-      p[i * 3] = Math.sin(phi) * Math.cos(theta) * r * 0.55 + side * 0.35;
-      p[i * 3 + 1] = Math.cos(phi) * r * 0.7 + 0.1;
-      p[i * 3 + 2] = Math.sin(phi) * Math.sin(theta) * r * 0.6;
-    } else if (section < 0.75) {
-      // Central fissure (dividing line)
-      p[i * 3] = (Math.random() - 0.5) * 0.06;
-      p[i * 3 + 1] = (Math.random() - 0.3) * 1.4;
-      p[i * 3 + 2] = (Math.random() - 0.5) * 0.8;
-    } else if (section < 0.9) {
-      // Brain stem
-      p[i * 3] = (Math.random() - 0.5) * 0.25;
-      p[i * 3 + 1] = -0.8 - Math.random() * 0.6;
-      p[i * 3 + 2] = (Math.random() - 0.5) * 0.25;
-    } else {
-      // Wrinkle ridges on surface
-      const ridge = Math.floor(Math.random() * 6);
+      // Place on surface (not inside)
+      p[i * 3] = Math.sin(phi) * Math.cos(theta) * r * 0.5 + side * 0.4;
+      p[i * 3 + 1] = Math.cos(phi) * r * 0.65 + 0.15;
+      p[i * 3 + 2] = Math.sin(phi) * Math.sin(theta) * r * 0.15; // Flattened z
+    } else if (section < 0.6) {
+      // Central fissure (deep dividing line between hemispheres)
+      p[i * 3] = (Math.random() - 0.5) * 0.04;
+      p[i * 3 + 1] = -0.4 + Math.random() * 1.6;
+      p[i * 3 + 2] = (Math.random() - 0.5) * 0.1;
+    } else if (section < 0.72) {
+      // Brain stem going down
+      p[i * 3] = (Math.random() - 0.5) * 0.2;
+      p[i * 3 + 1] = -0.7 - Math.random() * 0.7;
+      p[i * 3 + 2] = (Math.random() - 0.5) * 0.12;
+    } else if (section < 0.88) {
+      // Wrinkle ridges (sulci) - wavy lines across surface
+      const ridge = Math.floor(Math.random() * 8);
       const t = Math.random();
-      const angle = (ridge / 6) * Math.PI + t * 0.3;
-      const r = 0.9 + Math.sin(t * 10) * 0.05;
-      p[i * 3] = Math.cos(angle) * r * 0.5 + side * 0.2;
-      p[i * 3 + 1] = (t - 0.5) * 1.2 + 0.1;
-      p[i * 3 + 2] = Math.sin(angle) * r * 0.5;
+      const waveY = (t - 0.5) * 1.4 + 0.15;
+      const waveX = Math.sin(t * Math.PI * 3 + ridge) * 0.15;
+      p[i * 3] = waveX + side * (0.15 + Math.abs(Math.sin(t * Math.PI)) * 0.35);
+      p[i * 3 + 1] = waveY;
+      p[i * 3 + 2] = (Math.random() - 0.5) * 0.1;
+    } else {
+      // Bottom curve of each hemisphere
+      const angle = Math.random() * Math.PI;
+      p[i * 3] = Math.cos(angle) * 0.45 * side + side * 0.15;
+      p[i * 3 + 1] = -0.55 + Math.sin(angle) * 0.15;
+      p[i * 3 + 2] = (Math.random() - 0.5) * 0.1;
     }
+    if (Math.abs(p[i * 3 + 2]) > zSpread) p[i * 3 + 2] *= zSpread / Math.abs(p[i * 3 + 2]);
   }
   return p;
 }
@@ -723,7 +779,7 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
   const particleSizes = useMemo(() => {
     const sizes = new Float32Array(NUM_PARTICLES);
     for (let i = 0; i < NUM_PARTICLES; i++) {
-      sizes[i] = 1 + Math.random() * 1.5;
+      sizes[i] = 1.2 + Math.random() * 1.6;
     }
     return sizes;
   }, []);
@@ -798,7 +854,20 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
       const segLen = 1 / (numShapes - 1);
       const segIdx = Math.min(Math.floor(progress / segLen), numShapes - 2);
       const segProg = (progress - segIdx * segLen) / segLen;
-      const eased = segProg * segProg * (3 - 2 * segProg);
+      
+      // Dwell/plateau system: each shape holds for dwellRatio of its segment,
+      // then transitions during the remaining portion.
+      // This makes shapes clearly visible before morphing to the next.
+      const dwellRatio = 0.6; // 60% hold, 40% transition
+      let morphT: number;
+      if (segProg <= dwellRatio) {
+        morphT = 0; // Shape is fully formed, holding still
+      } else {
+        // Map the transition portion (dwellRatio..1) to (0..1)
+        morphT = (segProg - dwellRatio) / (1 - dwellRatio);
+      }
+      // Smooth easing on the transition portion only
+      const eased = morphT * morphT * (3 - 2 * morphT);
 
       const s1 = shapes[segIdx];
       const s2 = shapes[segIdx + 1];
@@ -809,8 +878,8 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
       const cg = Math.round(c1[1] + (c2[1] - c1[1]) * eased);
       const cb = Math.round(c1[2] + (c2[2] - c1[2]) * eased);
 
-      // Slower rotation for pain points to keep shapes readable
-      const rotSpeed = variant === 'painPoints' ? 0.15 : 0.3;
+      // Slow rotation for both variants to keep shapes recognizable
+      const rotSpeed = variant === 'painPoints' ? 0.08 : 0.15;
       rotationRef.current += delta * rotSpeed;
       const rot = rotationRef.current;
       const cosR = Math.cos(rot);
@@ -856,7 +925,7 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
         if (proj.scale <= 0) continue;
 
         const size = particleSizes[i] * proj.scale;
-        const alpha = Math.min(1, proj.scale * 0.7) * (0.4 + Math.random() * 0.1);
+        const alpha = Math.min(1, proj.scale * 0.8) * (0.5 + Math.random() * 0.1);
 
         ctx.beginPath();
         ctx.arc(proj.x, proj.y, size, 0, Math.PI * 2);

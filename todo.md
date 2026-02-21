@@ -260,3 +260,8 @@
 - [x] Pain Points: Create 8 unique shapes matching each pain point item
 - [x] Pain point shapes morph as user scrolls through each item
 - [x] Test visual quality and recognizability
+
+## Slow Particle Morph Transitions
+- [x] Add dwell/plateau time so each shape holds at fully formed state before morphing to next
+- [x] Improve hero shape recognizability (denser outlines, less fill noise)
+- [x] Test scroll pacing feels natural

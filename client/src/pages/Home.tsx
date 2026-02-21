@@ -183,7 +183,7 @@ export default function Home() {
       ScrollTrigger.create({
         trigger: heroRef.current,
         start: "top top",
-        end: "+=200%",
+        end: "+=400%",
         pin: true,
         scrub: 1,
         onUpdate: (self) => {
@@ -197,7 +197,7 @@ export default function Home() {
       ScrollTrigger.create({
         trigger: painRef.current,
         start: "top top",
-        end: "+=300%",
+        end: "+=500%",
         pin: true,
         scrub: 0.8,
         onUpdate: (self) => {
