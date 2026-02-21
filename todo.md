@@ -200,3 +200,12 @@
 - [x] Maintain cyberpunk/neon aesthetic throughout
 - [x] Test all animations and interactions
 - [x] Optimize performance for smooth 60fps
+
+## Differentiate Autonomous Agents from Chatbots
+- [x] Research OpenClaw positioning and autonomous agent messaging
+- [x] Rewrite AI capability cards to emphasize autonomous execution (not just chat)
+- [x] Add section on custom fine-tuned models trained on trade-specific data
+- [x] Remove all "chatbot" language and replace with "autonomous agent" / "operational AI"
+- [x] Emphasize models trained on HVAC/plumbing/electrical/construction data
+- [x] Show agents that DO work, not just answer questions
+- [x] Test revised messaging

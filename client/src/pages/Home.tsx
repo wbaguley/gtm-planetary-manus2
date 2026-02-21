@@ -41,48 +41,48 @@ export default function Home() {
       id: "voice",
       icon: "fa-phone-volume",
       title: "Voice AI Agents",
-      shortDesc: "Answer calls 24/7",
-      fullDesc: "AI voice agents that answer every call, qualify leads, book appointments, and handle customer service inquiries. Never miss a call again. Works 24/7 without breaks, sick days, or turnover.",
+      shortDesc: "Autonomous call handling",
+      fullDesc: "Autonomous voice agents that answer calls, qualify leads, book appointments, dispatch technicians, and resolve customer issues—without human intervention. Trained on your scripts, pricing, and service catalog. Works 24/7 with zero turnover.",
       color: "from-purple-500 to-pink-500"
     },
     {
       id: "document",
       icon: "fa-file-invoice",
-      title: "Document Intelligence",
-      shortDesc: "Extract data instantly",
-      fullDesc: "AI that reads invoices, contracts, permits, and forms—extracting key information automatically. Eliminate manual data entry and reduce errors. Processes hundreds of documents in seconds.",
+      title: "Document Processing Agents",
+      shortDesc: "Autonomous data extraction",
+      fullDesc: "Agents that read invoices, contracts, permits, and job tickets—extracting data, updating your CRM, flagging discrepancies, and routing approvals automatically. Fine-tuned on trade documents (change orders, permits, material lists). Processes hundreds per hour.",
       color: "from-cyan-500 to-blue-500"
     },
     {
       id: "scheduling",
       icon: "fa-calendar-check",
-      title: "Predictive Scheduling",
-      shortDesc: "Optimize routes & timing",
-      fullDesc: "AI-powered scheduling that optimizes routes, forecasts demand, prevents conflicts, and maximizes technician utilization. Reduce drive time by 30% and increase jobs per day.",
+      title: "Scheduling & Dispatch Agents",
+      shortDesc: "Autonomous route optimization",
+      fullDesc: "Agents that schedule jobs, optimize routes, dispatch technicians, and rebalance workloads in real-time. Trained on your service area, traffic patterns, and technician skill sets. Reduces drive time by 30% and increases daily job capacity.",
       color: "from-green-500 to-emerald-500"
     },
     {
       id: "bidding",
       icon: "fa-search-dollar",
-      title: "Bid Automation",
-      shortDesc: "Find & win contracts",
-      fullDesc: "AI agents that find contract opportunities, generate competitive bids, and track proposals automatically. Never miss a bidding opportunity. Win more contracts with data-driven pricing.",
+      title: "Bidding & Estimating Agents",
+      shortDesc: "Autonomous proposal generation",
+      fullDesc: "Agents that monitor contract boards, generate estimates, submit bids, and follow up on proposals—without human input. Fine-tuned on your historical win rates, material costs, and labor pricing. Wins more contracts while you focus on execution.",
       color: "from-orange-500 to-red-500"
     },
     {
       id: "customer",
       icon: "fa-users-cog",
-      title: "Customer Intelligence",
-      shortDesc: "Predict needs & automate follow-ups",
-      fullDesc: "AI that analyzes customer history, predicts service needs, automates follow-ups, and identifies upsell opportunities. Turn one-time customers into lifetime relationships.",
+      title: "Customer Lifecycle Agents",
+      shortDesc: "Proactive relationship management",
+      fullDesc: "Agents that analyze service history, predict maintenance needs, send proactive reminders, identify upsell opportunities, and nurture leads automatically. Trained on your customer data and service intervals. Turns one-time jobs into recurring revenue.",
       color: "from-violet-500 to-purple-500"
     },
     {
       id: "copilot",
       icon: "fa-robot",
-      title: "Operations Copilot",
-      shortDesc: "One AI for all systems",
-      fullDesc: "Your AI teammate that connects all your systems—CRM, accounting, scheduling, inventory. Ask it anything, get instant answers. Automate workflows and approvals across your entire business.",
+      title: "Custom Fine-Tuned Models",
+      shortDesc: "Trained on YOUR industry",
+      fullDesc: "Custom AI models trained on HVAC service codes, plumbing regulations, electrical specs, or construction workflows. Not generic ChatGPT—models that understand YOUR trade, YOUR processes, YOUR data. Connects to all your systems and executes tasks autonomously.",
       color: "from-pink-500 to-rose-500"
     }
   ];
@@ -503,23 +503,23 @@ export default function Home() {
                 <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-6 mx-auto">
                   <i className="fas fa-phone-volume text-3xl text-white"></i>
                 </div>
-                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Voice AI Agents</h3>
+                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Autonomous Voice Agents</h3>
                 <ul className="space-y-3 text-gray-300">
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Answer calls, qualify leads, book appointments</span>
+                    <span>Answers calls, qualifies leads, books jobs autonomously</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Handle customer service inquiries</span>
+                    <span>Dispatches technicians and resolves issues without escalation</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Follow up with quotes and reminders</span>
+                    <span>Trained on YOUR pricing, services, and scripts</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Works 24/7, never misses a call</span>
+                    <span>Executes tasks, not just conversations</span>
                   </li>
                 </ul>
               </CardContent>
@@ -530,23 +530,23 @@ export default function Home() {
                 <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center mb-6 mx-auto">
                   <i className="fas fa-file-invoice text-3xl text-white"></i>
                 </div>
-                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Document & Data AI</h3>
+                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Operational Agents</h3>
                 <ul className="space-y-3 text-gray-300">
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Extract info from invoices, contracts, permits</span>
+                    <span>Processes documents, updates CRM, routes approvals automatically</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Analyze job history and customer patterns</span>
+                    <span>Schedules jobs, dispatches techs, rebalances workloads in real-time</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Generate quotes and proposals</span>
+                    <span>Monitors contract boards and submits bids automatically</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Track inventory and supplies</span>
+                    <span>Fine-tuned on trade-specific workflows and data</span>
                   </li>
                 </ul>
               </CardContent>
@@ -557,23 +557,23 @@ export default function Home() {
                 <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mb-6 mx-auto">
                   <i className="fas fa-robot text-3xl text-white"></i>
                 </div>
-                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Operations Copilot</h3>
+                <h3 className="font-orbitron text-2xl font-bold mb-4 text-white text-center">Custom Fine-Tuned Models</h3>
                 <ul className="space-y-3 text-gray-300">
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Connect all your systems (CRM, accounting, scheduling)</span>
+                    <span>Trained on HVAC codes, plumbing regs, electrical specs</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Answer questions about any job, customer, or metric</span>
+                    <span>Understands YOUR trade, YOUR processes, YOUR data</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Automate workflows and approvals</span>
+                    <span>Not generic ChatGPT—industry-specific intelligence</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <i className="fas fa-check text-primary mt-1"></i>
-                    <span>Predict problems before they happen</span>
+                    <span>Connects all systems and executes tasks autonomously</span>
                   </li>
                 </ul>
               </CardContent>
@@ -594,19 +594,19 @@ export default function Home() {
 
           <div className="max-w-4xl mx-auto space-y-6 reveal">
             <p className="text-lg text-gray-300">
-              GTM Planetary builds custom AI models and autonomous agents exclusively for trade businesses.
+              GTM Planetary builds custom fine-tuned AI models and autonomous operational agents exclusively for trade businesses.
             </p>
             <p className="text-gray-400">
-              We're not a typical SaaS company selling software subscriptions. We're your AI workforce partner—deploying specialized agents that handle the operations, admin, and customer service that keep you from the work you're actually good at.
+              We're not selling chatbots or software subscriptions. We deploy AI agents that execute real work—scheduling jobs, processing invoices, bidding contracts, managing customer lifecycles—without human intervention.
             </p>
             <p className="text-gray-400">
-              HVAC, plumbing, electrical, construction, and skilled trades have been underserved by technology for decades. Generic tools don't understand your workflows. We do.
+              Our models are trained on trade-specific data: HVAC service codes, plumbing regulations, electrical specs, construction workflows. Not generic ChatGPT. Industry-specific intelligence that understands YOUR trade.
             </p>
             <p className="text-gray-400">
-              Every AI agent we build is fine-tuned on your business—your processes, your customers, your data. They learn how you work and get better over time.
+              Every agent is fine-tuned on your business—your pricing, your processes, your customer data. They don't just answer questions. They complete tasks, make decisions, and improve operations autonomously.
             </p>
             <p className="text-lg text-primary font-bold mt-8">
-              Stop fighting for hiring budget. Start deploying AI agents that work alongside your team, scale instantly, and never call in sick.
+              Stop fighting for hiring budget. Deploy autonomous agents that scale instantly, work 24/7, and execute tasks without supervision.
             </p>
           </div>
         </div>
