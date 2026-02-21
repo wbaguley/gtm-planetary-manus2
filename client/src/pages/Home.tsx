@@ -6,8 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
-// Scene3D replaced with scroll-triggered images
-// PainPointsScene replaced with scroll-triggered images
+import ParticleMorph from "@/components/ParticleMorph";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -369,8 +368,8 @@ export default function Home() {
             <div
               className="space-y-8"
               style={{
-                opacity: 1 - heroProgress * 1.5,
-                transform: `translateY(${heroProgress * -80}px)`,
+                opacity: Math.max(0, 1 - heroProgress * 0.8),
+                transform: `translateY(${heroProgress * -30}px)`,
               }}
             >
               <div className="inline-block px-4 py-1.5 border border-primary/40 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-4">
@@ -406,70 +405,17 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right: Scroll-triggered morphing images */}
+            {/* Right: Real-time particle morphing */}
             <div
               className="h-[500px] lg:h-[600px] relative flex items-center justify-center"
               style={{
-                transform: `scale(${1 + heroProgress * 0.15}) translateY(${heroProgress * -40}px)`,
+                transform: `scale(${1 + heroProgress * 0.15}) translateY(${heroProgress * -10}px)`,
               }}
             >
-              {/* Image layers that crossfade based on scroll progress */}
-              {[
-                "https://files.manuscdn.com/user_upload_by_module/session_file/102747574/PlEzKZdwZAnBxXAB.png",
-                "https://files.manuscdn.com/user_upload_by_module/session_file/102747574/TLxurgbGQmqmzECN.png",
-                "https://files.manuscdn.com/user_upload_by_module/session_file/102747574/OeWBERFciIQUgWDT.png",
-                "https://files.manuscdn.com/user_upload_by_module/session_file/102747574/adeiLPufwoeBFrVS.png",
-              ].map((src, i) => {
-                // Each image gets 25% of the scroll range
-                const segmentSize = 1 / 4;
-                const segmentStart = i * segmentSize;
-                const progress = heroProgress * 3; // amplify scroll progress
-                
-                // Calculate opacity: fade in, hold, fade out
-                let opacity = 0;
-                if (i === 0) {
-                  // First image: start fully visible, fade out
-                  opacity = progress < segmentSize ? 1 - (progress / segmentSize) * 0.7 : progress < segmentSize * 2 ? 0.3 - ((progress - segmentSize) / segmentSize) * 0.3 : 0;
-                  if (progress <= 0.01) opacity = 1;
-                } else {
-                  const fadeInStart = segmentStart - segmentSize * 0.3;
-                  const fadeInEnd = segmentStart;
-                  const holdEnd = segmentStart + segmentSize * 0.7;
-                  const fadeOutEnd = segmentStart + segmentSize;
-                  
-                  if (progress >= fadeInStart && progress < fadeInEnd) {
-                    opacity = (progress - fadeInStart) / (fadeInEnd - fadeInStart);
-                  } else if (progress >= fadeInEnd && progress < holdEnd) {
-                    opacity = 1;
-                  } else if (progress >= holdEnd && progress < fadeOutEnd) {
-                    opacity = 1 - (progress - holdEnd) / (fadeOutEnd - holdEnd);
-                  }
-                  // Last image stays visible
-                  if (i === 3 && progress >= fadeInEnd) opacity = 1;
-                }
-
-                return (
-                  <img
-                    key={i}
-                    src={src}
-                    alt={["Wrench morphing into circuit board", "Hardhat morphing into AI brain", "Blueprint morphing into data interface", "Trade tools dissolving into AI matrix"][i]}
-                    className="absolute inset-0 w-full h-full object-contain transition-none"
-                    style={{
-                      opacity: Math.max(0, Math.min(1, opacity)),
-                      transform: `scale(${1 + (i * 0.02)}) rotate(${heroProgress * (i % 2 === 0 ? 3 : -3)}deg)`,
-                      filter: `drop-shadow(0 0 ${20 + opacity * 30}px rgba(173, 24, 252, ${opacity * 0.5}))`,
-                    }}
-                    loading={i === 0 ? "eager" : "lazy"}
-                  />
-                );
-              })}
-              {/* Glow backdrop */}
-              <div
-                className="absolute inset-0 rounded-full blur-3xl -z-10"
-                style={{
-                  background: `radial-gradient(circle, rgba(173, 24, 252, ${0.15 + heroProgress * 0.1}) 0%, transparent 70%)`,
-                  transform: `scale(${1.2 + heroProgress * 0.3})`,
-                }}
+              <ParticleMorph
+                scrollProgress={heroProgress}
+                variant="hero"
+                className="w-full h-full"
               />
             </div>
           </div>
@@ -478,7 +424,7 @@ export default function Home() {
         {/* Scroll indicator */}
         <div
           className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center z-10"
-          style={{ opacity: 1 - heroProgress * 4 }}
+          style={{ opacity: Math.max(0, 1 - heroProgress * 2) }}
         >
           <span className="block text-sm mb-2 text-muted-foreground">Scroll to explore</span>
           <div className="w-6 h-10 border-2 border-primary/50 rounded-full mx-auto flex justify-center">
@@ -623,44 +569,13 @@ export default function Home() {
               })}
             </div>
 
-            {/* Right: Scroll-triggered pain point images */}
+            {/* Right: Real-time particle morphing for pain points */}
             <div className="h-[500px] lg:h-[600px] relative flex items-center justify-center">
-              {[
-                "https://files.manuscdn.com/user_upload_by_module/session_file/102747574/hEZpZkrivtwqEwnh.png",
-                "https://files.manuscdn.com/user_upload_by_module/session_file/102747574/BWpSTvSLnRsWctAu.png",
-                "https://files.manuscdn.com/user_upload_by_module/session_file/102747574/qKHtLoNqjcFTqTyZ.png",
-                "https://files.manuscdn.com/user_upload_by_module/session_file/102747574/SWfrNhdZyGAfkMXA.png",
-              ].map((src, i) => {
-                // Map 4 images across 8 pain points: each image covers 2 pain points
-                const imageIndex = Math.min(3, Math.floor(adjustedProgress * 4));
-                const isActive = i === imageIndex;
-                const isPrev = i === imageIndex - 1;
-                
-                return (
-                  <img
-                    key={i}
-                    src={src}
-                    alt={["Job chaos being resolved by AI", "Disconnected systems unified by AI", "AI agent workforce deployment", "AI financial optimization"][i]}
-                    className="absolute inset-0 w-full h-full object-contain"
-                    style={{
-                      opacity: isActive ? 1 : isPrev ? 0.15 : 0,
-                      transform: `scale(${isActive ? 1 : 0.9}) rotate(${isActive ? 0 : -5}deg)`,
-                      transition: 'opacity 0.8s ease, transform 0.8s ease',
-                      filter: `drop-shadow(0 0 30px rgba(168, 85, 247, ${isActive ? 0.4 : 0}))`,
-                    }}
-                    loading={i === 0 ? "eager" : "lazy"}
-                  />
-                );
-              })}
-              {/* Glow backdrop */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div
-                  className="w-80 h-80 rounded-full blur-3xl"
-                  style={{
-                    background: `radial-gradient(circle, rgba(239,68,68,${0.1 + painProgress * 0.15}) 0%, rgba(168,85,247,${0.05 + painProgress * 0.1}) 50%, transparent 70%)`,
-                  }}
-                />
-              </div>
+              <ParticleMorph
+                scrollProgress={painProgress}
+                variant="painPoints"
+                className="w-full h-full"
+              />
             </div>
           </div>
         </div>

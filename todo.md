@@ -237,3 +237,15 @@
 - [x] Replace CSS orb with scroll-triggered image transitions in hero section
 - [x] Replace PainPointsScene with scroll-triggered pain point images
 - [ ] Test scroll-based image morphing effect
+
+## Real-Time Particle Morph System (Replace Static Image Crossfades)
+- [x] Build particle point cloud system with thousands of points
+- [x] Define shape coordinates for hero: wrench → brain → circuit → neural network
+- [x] Define shape coordinates for pain points: chaos → systems → scaling → resolution
+- [x] Implement scroll-driven interpolation (particles move between positions as you scroll)
+- [x] Add glow, trails, and color shifts during morphing transitions
+- [x] Integrate into hero section replacing image crossfades
+- [x] Integrate into pain points section replacing image crossfades
+- [x] Keep AI-generated images as background/accent behind particles
+- [x] Fix hero text opacity fading too aggressively
+- [ ] Test on published site
