@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
+import { Scene3D } from "@/components/Scene3D";
+import { PainPointsScene } from "@/components/PainPointsScene";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -354,8 +356,8 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section with Parallax */}
-      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      {/* Hero Section with 3D Morphing Object */}
+      <section id="home" className="relative min-h-screen flex items-center overflow-hidden pt-20">
         {/* Parallax Background Layers */}
         <div 
           className="absolute inset-0 grid-bg" 
@@ -367,65 +369,43 @@ export default function Home() {
           style={{ transform: `translateY(${scrollY * 0.3}px)` }}
         ></div>
         
-        {/* Hero Content */}
-        <div className="container relative z-10 text-center px-4">
-          <h1 className="font-orbitron text-3xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            STOP HIRING. <span className="glitch neon-glow inline-block" data-text="START DEPLOYING.">START DEPLOYING.</span>
-          </h1>
-          <p className="text-xl md:text-2xl mb-12 max-w-3xl mx-auto text-muted-foreground">
-            Custom AI models and autonomous agents that handle operations, bidding, scheduling, and customer service—so you can focus on the work that matters.
-          </p>
-          
-          {/* Floating AI Capability Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-12">
-            {aiCapabilities.map((capability, index) => (
-              <div
-                key={capability.id}
-                className={`floating-card floating-card-${index + 1} cursor-pointer transition-all duration-300 ${
-                  expandedCard === capability.id ? 'scale-105 z-20' : 'hover:scale-105'
-                }`}
-                onClick={() => setExpandedCard(expandedCard === capability.id ? null : capability.id)}
-                style={{
-                  animationDelay: `${index * 0.2}s`
-                }}
-              >
-                <Card className={`bg-black/80 backdrop-blur-sm border-2 ${expandedCard === capability.id ? 'border-primary' : 'border-primary/30'} hover:border-primary transition-all duration-300 h-full`}>
-                  <CardContent className="p-6">
-                    <div className={`w-16 h-16 bg-gradient-to-br ${capability.color} rounded-full flex items-center justify-center mb-4 mx-auto`}>
-                      <i className={`fas ${capability.icon} text-2xl text-white`}></i>
-                    </div>
-                    <h3 className="font-orbitron text-lg font-bold mb-2 text-white">{capability.title}</h3>
-                    <p className="text-sm text-gray-400 mb-3">{capability.shortDesc}</p>
-                    {expandedCard === capability.id && (
-                      <div className="mt-4 pt-4 border-t border-primary/30">
-                        <p className="text-sm text-gray-300">{capability.fullDesc}</p>
-                      </div>
-                    )}
-                    <div className="text-xs text-primary mt-3">
-                      {expandedCard === capability.id ? 'Click to collapse' : 'Click for details'}
-                    </div>
-                  </CardContent>
-                </Card>
+        {/* Hero Content - Text Left, 3D Object Right */}
+        <div className="container relative z-10 px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Text Content */}
+            <div className="space-y-8">
+              <h1 className="font-orbitron text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight">
+                STOP HIRING.
+                <br />
+                <span className="glitch neon-glow inline-block" data-text="START DEPLOYING.">START DEPLOYING.</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-xl">
+                Custom AI models and autonomous agents that handle operations, bidding, scheduling, and customer service—so you can focus on the work that matters.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  size="lg"
+                  className="font-orbitron uppercase tracking-wider bg-primary hover:bg-primary/90 pulse-border"
+                  onClick={() => scrollToSection("contact")}
+                >
+                  Build Your AI Workforce
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="font-orbitron uppercase tracking-wider"
+                  onClick={() => scrollToSection("solutions")}
+                >
+                  See What We Solve
+                </Button>
               </div>
-            ))}
-          </div>
+            </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              className="font-orbitron uppercase tracking-wider bg-primary hover:bg-primary/90 pulse-border"
-              onClick={() => scrollToSection("contact")}
-            >
-              Build Your AI Workforce
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="font-orbitron uppercase tracking-wider"
-              onClick={() => scrollToSection("solutions")}
-            >
-              See What We Solve
-            </Button>
+            {/* Right: 3D Morphing Object */}
+            <div className="h-[500px] lg:h-[600px] relative">
+              <Scene3D scrollProgress={scrollY / 1000} className="rounded-lg" />
+            </div>
           </div>
         </div>
         
@@ -435,9 +415,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pain Points Section */}
-      <section id="solutions" className="py-20 bg-black relative">
-        <div className="container">
+      {/* Pain Points Section - Scifi Retro Layout */}
+      <section id="solutions" className="py-20 bg-black relative overflow-hidden">
+        {/* Background Grid Effect */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(rgba(168, 85, 247, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(168, 85, 247, 0.1) 1px, transparent 1px)',
+            backgroundSize: '50px 50px'
+          }}></div>
+        </div>
+
+        <div className="container relative z-10">
           <div className="text-center mb-16 reveal">
             <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
               WHAT'S <span className="text-primary neon-glow">HOLDING YOU BACK?</span>
@@ -448,41 +436,53 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {painPoints.map((point, index) => (
-              <div
-                key={point.id}
-                className={`reveal cursor-pointer transition-all duration-300 ${
-                  expandedPainPoint === point.id ? 'md:col-span-2 lg:col-span-2' : ''
-                }`}
-                style={{ animationDelay: `${index * 0.1}s` }}
-                onClick={() => setExpandedPainPoint(expandedPainPoint === point.id ? null : point.id)}
-              >
-                <Card className={`bg-black/80 border-2 ${point.color} hover:border-primary transition-all duration-300 h-full hover:scale-105 hover:shadow-2xl hover:shadow-primary/20`}>
-                  <CardContent className="p-6">
-                    <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
-                      <i className={`fas ${point.icon} text-3xl text-primary`}></i>
-                    </div>
-                    <h3 className="font-orbitron text-xl font-bold mb-3 text-white">{point.title}</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">The Problem:</p>
-                        <p className="text-sm text-gray-400">{point.problem}</p>
+          {/* Scifi Retro Layout: Central morphing object with pain points around it */}
+          <div className="relative">
+            {/* Central 3D Morphing Object */}
+            <div className="w-full max-w-md mx-auto h-[400px] mb-12">
+              <PainPointsScene scrollProgress={scrollY / 800} className="rounded-lg" />
+            </div>
+
+            {/* Pain Points - Terminal Style Cards */}
+            <div className="space-y-4">
+              {painPoints.map((point, index) => (
+                <div
+                  key={point.id}
+                  className="reveal cursor-pointer transition-all duration-300 hover:translate-x-2"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                  onClick={() => setExpandedPainPoint(expandedPainPoint === point.id ? null : point.id)}
+                >
+                  <div className={`bg-black/90 border-l-4 ${point.color} p-6 hover:bg-black/95 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20`}>
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-primary/20 rounded flex items-center justify-center flex-shrink-0">
+                        <i className={`fas ${point.icon} text-xl text-primary`}></i>
                       </div>
-                      {expandedPainPoint === point.id && (
-                        <div className="mt-4 pt-4 border-t border-primary/30">
-                          <p className="text-xs text-primary uppercase tracking-wider mb-1">Our Solution:</p>
-                          <p className="text-sm text-gray-300">{point.solution}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-mono text-xs text-primary">&gt;_</span>
+                          <h3 className="font-orbitron text-lg font-bold text-white">{point.title}</h3>
                         </div>
-                      )}
+                        <div className="space-y-2">
+                          <div>
+                            <p className="font-mono text-xs text-red-400 uppercase tracking-wider mb-1">ERROR:</p>
+                            <p className="text-sm text-gray-400">{point.problem}</p>
+                          </div>
+                          {expandedPainPoint === point.id && (
+                            <div className="mt-3 pt-3 border-t border-primary/30 animate-in fade-in slide-in-from-top-2 duration-300">
+                              <p className="font-mono text-xs text-green-400 uppercase tracking-wider mb-1">SOLUTION:</p>
+                              <p className="text-sm text-gray-300">{point.solution}</p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="font-mono text-xs text-primary mt-3">
+                          {expandedPainPoint === point.id ? '[COLLAPSE]' : '[EXPAND]'}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-primary mt-4">
-                      {expandedPainPoint === point.id ? '▲ Click to collapse' : '▼ Click to see solution'}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
