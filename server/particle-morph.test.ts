@@ -22,31 +22,31 @@ function orbPositions(n: number): Float32Array {
   return p;
 }
 
-function wrenchPositions(n: number): Float32Array {
+function hardHatPositions(n: number): Float32Array {
   const p = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
     const section = Math.random();
-    if (section < 0.35) {
-      // Open jaw prongs
-      const prong = Math.random() > 0.5 ? 1 : -1;
-      const t = Math.random();
-      p[i * 3] = prong * (0.15 + t * 0.35);
-      p[i * 3 + 1] = 1.0 + t * 0.5;
-    } else if (section < 0.50) {
-      // Jaw shoulders
-      const side = Math.random() > 0.5 ? 1 : -1;
-      const t = Math.random();
-      p[i * 3] = side * (0.12 + t * 0.25);
-      p[i * 3 + 1] = 0.7 + t * 0.35;
-    } else if (section < 0.90) {
-      // Shaft
-      p[i * 3] = (Math.random() - 0.5) * 0.22;
-      p[i * 3 + 1] = 0.7 - Math.random() * 2.8;
+    if (section < 0.40) {
+      // Dome
+      const angle = Math.random() * Math.PI;
+      const rx = 1.0;
+      const ry = 0.75;
+      p[i * 3] = Math.cos(angle) * rx;
+      p[i * 3 + 1] = Math.sin(angle) * ry + 0.1;
+    } else if (section < 0.55) {
+      // Dome fill
+      const angle = Math.random() * Math.PI;
+      const r = Math.sqrt(Math.random());
+      p[i * 3] = Math.cos(angle) * r * 0.85;
+      p[i * 3 + 1] = Math.sin(angle) * r * 0.6 + 0.15;
+    } else if (section < 0.80) {
+      // Brim
+      p[i * 3] = (Math.random() - 0.5) * 2.6;
+      p[i * 3 + 1] = 0.08 + (Math.random() - 0.5) * 0.06;
     } else {
-      // Rounded bottom tip
-      const angle = Math.PI + Math.random() * Math.PI;
-      p[i * 3] = Math.cos(angle) * 0.12;
-      p[i * 3 + 1] = -2.1 + Math.sin(angle) * 0.06;
+      // Ridge and details
+      p[i * 3] = (Math.random() - 0.5) * 0.6;
+      p[i * 3 + 1] = 0.05 - Math.random() * 0.2;
     }
     p[i * 3 + 2] = (Math.random() - 0.5) * 0.15;
   }
@@ -223,27 +223,20 @@ describe('ParticleMorph shape generators', () => {
       }
     });
 
-    it('wrenchPositions has open jaw (prongs at top) and shaft, no box end ring', () => {
-      const pos = wrenchPositions(1000);
-      let jawCount = 0, shaftCount = 0, bottomCount = 0;
-      let maxBottomX = 0;
+    it('hardHatPositions has dome above brim and wide brim', () => {
+      const pos = hardHatPositions(1000);
+      let domeCount = 0, brimCount = 0;
       for (let i = 0; i < 1000; i++) {
-        const x = pos[i * 3], y = pos[i * 3 + 1];
-        if (y > 1.0) jawCount++;
-        if (y < 0 && y > -2.0) shaftCount++;
-        if (y < -2.0) {
-          bottomCount++;
-          maxBottomX = Math.max(maxBottomX, Math.abs(x));
-        }
+        const x = Math.abs(pos[i * 3]), y = pos[i * 3 + 1];
+        if (y > 0.3) domeCount++;
+        if (y < 0.15 && y > -0.1 && x > 0.5) brimCount++;
       }
-      expect(jawCount).toBeGreaterThan(0);
-      expect(shaftCount).toBeGreaterThan(0);
-      // Bottom should be small rounded tip, not a wide ring
-      expect(maxBottomX).toBeLessThan(0.5);
+      expect(domeCount).toBeGreaterThan(100);
+      expect(brimCount).toBeGreaterThan(50);
     });
 
-    it('wrenchPositions has no NaN values', () => {
-      const pos = wrenchPositions(NUM_PARTICLES);
+    it('hardHatPositions has no NaN values', () => {
+      const pos = hardHatPositions(NUM_PARTICLES);
       for (let i = 0; i < pos.length; i++) {
         expect(Number.isFinite(pos[i])).toBe(true);
       }
@@ -344,10 +337,10 @@ describe('ParticleMorph shape generators', () => {
   });
 
   describe('Shape configuration', () => {
-    it('hero variant has 6 shapes (orb → wrench → hammer → neural → voice → orb)', () => {
+    it('hero variant has 6 shapes (orb → hardhat → hammer → neural → voice → orb)', () => {
       const heroShapes = [
         orbPositions(100),
-        wrenchPositions(100),
+        hardHatPositions(100),
         hammerPositions(100),
         neuralNetPositions(100),
         voiceAIPositions(100),
@@ -377,7 +370,7 @@ describe('ParticleMorph shape generators', () => {
 
     it('all shapes have thin z-depth (< 0.3) for readable silhouettes', () => {
       const shapes = [
-        wrenchPositions(NUM_PARTICLES),
+        hardHatPositions(NUM_PARTICLES),
         hammerPositions(NUM_PARTICLES),
         neuralNetPositions(NUM_PARTICLES),
         voiceAIPositions(NUM_PARTICLES),

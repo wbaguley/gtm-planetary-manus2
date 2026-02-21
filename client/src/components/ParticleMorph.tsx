@@ -16,49 +16,51 @@ function orbPositions(n: number): Float32Array {
   return p;
 }
 
-// WRENCH — simple open-end wrench, no box end
-function wrenchPositions(n: number): Float32Array {
+// HARD HAT — construction hard hat with dome and brim
+function hardHatPositions(n: number): Float32Array {
   const p = new Float32Array(n * 3);
   const zSpread = 0.15;
 
   for (let i = 0; i < n; i++) {
     const section = Math.random();
 
-    if (section < 0.35) {
-      // Open jaw at top — two parallel prongs opening upward
-      const prong = Math.random() > 0.5 ? 1 : -1;
+    if (section < 0.40) {
+      // Dome — top half of an ellipse (the rounded helmet shell)
+      const angle = Math.random() * Math.PI; // 0 to PI = top half
+      const rx = 1.0 + (Math.random() - 0.5) * 0.04;
+      const ry = 0.75 + (Math.random() - 0.5) * 0.04;
+      p[i * 3] = Math.cos(angle) * rx;
+      p[i * 3 + 1] = Math.sin(angle) * ry + 0.1;
+    } else if (section < 0.55) {
+      // Dome fill — particles inside the dome for density
+      const angle = Math.random() * Math.PI;
+      const r = Math.sqrt(Math.random());
+      p[i * 3] = Math.cos(angle) * r * 0.85;
+      p[i * 3 + 1] = Math.sin(angle) * r * 0.6 + 0.15;
+    } else if (section < 0.70) {
+      // Brim — flat horizontal line extending beyond dome on both sides
+      p[i * 3] = (Math.random() - 0.5) * 2.6 + (Math.random() - 0.5) * 0.03;
+      p[i * 3 + 1] = 0.08 + (Math.random() - 0.5) * 0.06;
+    } else if (section < 0.80) {
+      // Brim thickness — slight depth to the brim
+      p[i * 3] = (Math.random() - 0.5) * 2.6;
+      p[i * 3 + 1] = -0.02 + (Math.random() - 0.5) * 0.04;
+    } else if (section < 0.88) {
+      // Front bill — small protruding visor at front center
       const t = Math.random();
-      // Prongs go from shaft width out to jaw width
-      p[i * 3] = prong * (0.15 + t * 0.35) + (Math.random() - 0.5) * 0.04;
-      p[i * 3 + 1] = 1.0 + t * 0.5 + (Math.random() - 0.5) * 0.04;
-    } else if (section < 0.50) {
-      // Jaw shoulders — angled connection from shaft to prongs
-      const side = Math.random() > 0.5 ? 1 : -1;
+      p[i * 3] = (Math.random() - 0.5) * 0.6;
+      p[i * 3 + 1] = 0.05 - t * 0.2 + (Math.random() - 0.5) * 0.03;
+    } else if (section < 0.94) {
+      // Center ridge line on top of dome
       const t = Math.random();
-      p[i * 3] = side * (0.12 + t * 0.25) + (Math.random() - 0.5) * 0.03;
-      p[i * 3 + 1] = 0.7 + t * 0.35 + (Math.random() - 0.5) * 0.03;
-    } else if (section < 0.90) {
-      // Long straight shaft — the main handle
-      const edge = Math.random();
-      if (edge < 0.35) {
-        // Left edge
-        p[i * 3] = -0.12 + (Math.random() - 0.5) * 0.03;
-        p[i * 3 + 1] = 0.7 - Math.random() * 2.8;
-      } else if (edge < 0.70) {
-        // Right edge
-        p[i * 3] = 0.12 + (Math.random() - 0.5) * 0.03;
-        p[i * 3 + 1] = 0.7 - Math.random() * 2.8;
-      } else {
-        // Fill
-        p[i * 3] = (Math.random() - 0.5) * 0.22;
-        p[i * 3 + 1] = 0.7 - Math.random() * 2.8;
-      }
+      p[i * 3] = (Math.random() - 0.5) * 0.04;
+      p[i * 3 + 1] = 0.1 + t * 0.75 + (Math.random() - 0.5) * 0.02;
     } else {
-      // Bottom end — slightly rounded tip
-      const angle = Math.PI + Math.random() * Math.PI;
-      const r = 0.12 + (Math.random() - 0.5) * 0.03;
-      p[i * 3] = Math.cos(angle) * r;
-      p[i * 3 + 1] = -2.1 + Math.sin(angle) * r * 0.5;
+      // Inner headband line (visible at bottom of dome)
+      const angle = Math.random() * Math.PI;
+      const rx = 0.75;
+      p[i * 3] = Math.cos(angle) * rx + (Math.random() - 0.5) * 0.03;
+      p[i * 3 + 1] = 0.12 + Math.sin(angle) * 0.05 + (Math.random() - 0.5) * 0.02;
     }
     p[i * 3 + 2] = (Math.random() - 0.5) * zSpread;
   }
@@ -437,8 +439,8 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
     if (variant === 'hero') {
       return [
         orbPositions(NUM_PARTICLES),
-        wrenchPositions(NUM_PARTICLES),
-        hammerPositions(NUM_PARTICLES),
+        hardHatPositions(NUM_PARTICLES),      // Trade tool
+        hammerPositions(NUM_PARTICLES),       // Trade tool
         neuralNetPositions(NUM_PARTICLES),
         voiceAIPositions(NUM_PARTICLES),
         orbPositions(NUM_PARTICLES),

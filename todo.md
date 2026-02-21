@@ -288,3 +288,8 @@
 - [x] Reduce pain point shapes to 4 + resolved orb (clock, dollar, target, phone)
 - [x] Keep all 8 pain point text items in scrolling list
 - [x] Map 8 scroll items to 5 particle shapes
+
+## Hero Shape: Wrench → Hard Hat
+- [x] Replace wrench shape generator with construction hard hat
+- [x] Update hero sequence: Orb → Hard Hat → Hammer → Neural Net → Voice AI → Orb
+- [x] Update tests
