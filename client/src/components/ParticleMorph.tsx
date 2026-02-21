@@ -49,7 +49,7 @@ function brainPositions(n: number): Float32Array {
     const h = Math.random() > 0.5 ? 1 : -1;
     const phi = Math.acos(-1 + 2 * Math.random());
     const theta = Math.random() * Math.PI * 2;
-    let r = 1.2 + Math.sin(theta * 6) * 0.15 + Math.sin(phi * 8) * 0.1;
+    const r = 1.2 + Math.sin(theta * 6) * 0.15 + Math.sin(phi * 8) * 0.1;
     p[i * 3] = Math.sin(phi) * Math.cos(theta) * r * 0.6 + h * 0.3;
     p[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * r * 0.8;
     p[i * 3 + 2] = Math.cos(phi) * r * 0.7;
@@ -191,6 +191,10 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
   const rotationRef = useRef(0);
   const animFrameRef = useRef<number>(0);
   const lastTimeRef = useRef(0);
+  // Store DPR and logical dimensions to avoid cumulative ctx.scale issues
+  const dprRef = useRef(1);
+  const logicalWidthRef = useRef(0);
+  const logicalHeightRef = useRef(0);
 
   // Pre-compute shapes once
   const shapes = useMemo(() => {
@@ -272,28 +276,69 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
+
+    let isActive = true;
 
     const resizeCanvas = () => {
       const parent = canvas.parentElement;
       if (!parent) return;
-      const dpr = Math.min(window.devicePixelRatio, 2);
-      canvas.width = parent.clientWidth * dpr;
-      canvas.height = parent.clientHeight * dpr;
-      canvas.style.width = parent.clientWidth + 'px';
-      canvas.style.height = parent.clientHeight + 'px';
-      ctx.scale(dpr, dpr);
+      
+      const rect = parent.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      
+      // Skip if parent has no dimensions (not yet laid out)
+      if (w === 0 || h === 0) return;
+      
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dprRef.current = dpr;
+      logicalWidthRef.current = w;
+      logicalHeightRef.current = h;
+      
+      // Set canvas pixel buffer size
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      
+      // Set CSS display size
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      
+      // NOTE: We do NOT call ctx.scale(dpr, dpr) here.
+      // Instead, we use setTransform per frame to avoid cumulative scaling on resize.
     };
 
     resizeCanvas();
+    // Retry resize after layout settles (critical for production where layout may be delayed)
+    const resizeTimeout = setTimeout(resizeCanvas, 100);
+    const resizeTimeout2 = setTimeout(resizeCanvas, 500);
+    const resizeTimeout3 = setTimeout(resizeCanvas, 1000);
     window.addEventListener('resize', resizeCanvas);
+    
+    // Use ResizeObserver for robust detection when parent gets dimensions
+    let resizeObserver: ResizeObserver | null = null;
+    const parent = canvas.parentElement;
+    if (parent && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        resizeCanvas();
+      });
+      resizeObserver.observe(parent);
+    }
 
     const animate = (time: number) => {
+      if (!isActive) return;
       animFrameRef.current = requestAnimationFrame(animate);
       
       const delta = lastTimeRef.current ? (time - lastTimeRef.current) / 1000 : 0.016;
       lastTimeRef.current = time;
+
+      const w = logicalWidthRef.current;
+      const h = logicalHeightRef.current;
+      const dpr = dprRef.current;
+      
+      // Skip frame if canvas has no size
+      if (w === 0 || h === 0) return;
 
       const progress = progressRef.current;
       const numShapes = shapes.length;
@@ -334,13 +379,15 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
         currentPositions[i3+2] += (tz - currentPositions[i3+2]) * lerpSpeed;
       }
 
-      // Clear
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      ctx.clearRect(0, 0, w, h);
+      // Clear the entire canvas buffer (use pixel dimensions, not logical)
+      ctx.resetTransform();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Set the DPR transform for this frame (avoids cumulative scaling)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      // Draw particles with depth sorting (skip for performance, just draw all)
-      ctx.globalCompositeOperation = 'lighter'; // Additive blending!
+      // Draw particles with additive blending
+      ctx.globalCompositeOperation = 'lighter';
 
       for (let i = 0; i < NUM_PARTICLES; i++) {
         const i3 = i * 3;
@@ -387,8 +434,13 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
     animFrameRef.current = requestAnimationFrame(animate);
 
     return () => {
+      isActive = false;
       cancelAnimationFrame(animFrameRef.current);
+      clearTimeout(resizeTimeout);
+      clearTimeout(resizeTimeout2);
+      clearTimeout(resizeTimeout3);
       window.removeEventListener('resize', resizeCanvas);
+      if (resizeObserver) resizeObserver.disconnect();
     };
   }, [shapes, colors, currentPositions, particleOffsets, particleSizes, project]);
 
@@ -398,11 +450,11 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
   }, [scrollProgress]);
 
   return (
-    <div className={`relative ${className || ''}`}>
+    <div className={`relative ${className || ''}`} style={{ minHeight: '100%', minWidth: '100%' }}>
       <canvas
         ref={canvasRef}
         className="w-full h-full"
-        style={{ display: 'block' }}
+        style={{ display: 'block', width: '100%', height: '100%' }}
       />
     </div>
   );

@@ -249,3 +249,8 @@
 - [x] Keep AI-generated images as background/accent behind particles
 - [x] Fix hero text opacity fading too aggressively
 - [ ] Test on published site
+
+## Fix Particle Morph Not Rendering on Published Site
+- [x] Debug why Canvas 2D particles don't render on published site
+- [x] Fix rendering issue
+- [x] Test and verify fix
