@@ -681,7 +681,7 @@ export default function Home() {
               We're not selling chatbots or software subscriptions. We deploy AI agents that execute real work—scheduling jobs, processing invoices, bidding contracts, managing customer lifecycles—without human intervention.
             </p>
             <p className="text-gray-400 leading-relaxed">
-              Our models are trained on trade-specific data: HVAC service codes, plumbing regulations, electrical specs, construction workflows. Not generic ChatGPT. Industry-specific intelligence that understands YOUR trade.
+              Our models are trained on trade-specific data: HVAC service codes, plumbing regulations, electrical specs, construction workflows. Not a generic Chat bot or Agent. Industry-specific intelligence that understands YOUR trade.
             </p>
             <p className="text-gray-400 leading-relaxed">
               Every agent is fine-tuned on your business—your pricing, your processes, your customer data. They don't just answer questions. They complete tasks, make decisions, and improve operations autonomously.
