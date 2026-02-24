@@ -293,3 +293,10 @@
 - [x] Replace wrench shape generator with construction hard hat
 - [x] Update hero sequence: Orb → Hard Hat → Hammer → Neural Net → Voice AI → Orb
 - [x] Update tests
+
+## Remove Particle Morph Animation, Add Breathing Orb
+- [x] Remove all shape morphing logic from ParticleMorph
+- [x] Keep only the orb/sphere shape
+- [x] Add breathing effect (subtle scale pulse in/out, 3.5 second cycle)
+- [x] Apply to both hero and pain points sections
+- [x] Test and verify

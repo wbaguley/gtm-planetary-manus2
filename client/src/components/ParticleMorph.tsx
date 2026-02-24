@@ -1,11 +1,5 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react';
-import {
-  orbPositions,
-  hardHatPositions,
-  hammerPositions,
-  neuralNetPositions,
-  voiceAIPositions,
-} from './particle-shapes';
+import { orbPositions } from './particle-shapes';
 
 // ─── Types & Constants ─────────────────────────────────────────────
 
@@ -33,20 +27,10 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
   const logicalHeightRef = useRef(0);
   const rotationRef = useRef(0);
 
+  // Both hero and pain points: static orb only
   const shapes = useMemo(() => {
-    if (variant === 'hero') {
-      return [
-        orbPositions(NUM_PARTICLES),
-        hardHatPositions(NUM_PARTICLES),
-        hammerPositions(NUM_PARTICLES),
-        neuralNetPositions(NUM_PARTICLES),
-        voiceAIPositions(NUM_PARTICLES),
-        orbPositions(NUM_PARTICLES),
-      ];
-    }
-    // Pain points: static orb (single shape, no morphing)
     return [orbPositions(NUM_PARTICLES)];
-  }, [variant]);
+  }, []);
 
   // Current particle positions (mutable for performance)
   const currentPositions = useMemo(() => {
@@ -142,29 +126,12 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
       const progress = progressRef.current;
       const numShapes = shapes.length;
 
-      // For single-shape variant, no morphing needed
-      let eased = 0;
-      let s1 = shapes[0];
-      let s2 = shapes[0];
+      // No morphing - just use the orb shape
+      const s1 = shapes[0];
+      const eased = 0;
 
-      if (numShapes > 1) {
-        const segLen = 1 / (numShapes - 1);
-        const segIdx = Math.min(Math.floor(progress / segLen), numShapes - 2);
-        const segProg = (progress - segIdx * segLen) / segLen;
-
-        // Dwell/plateau: shape holds for 65% of segment, transitions during 35%
-        const dwellRatio = 0.65;
-        let morphT: number;
-        if (segProg <= dwellRatio) {
-          morphT = 0;
-        } else {
-          morphT = (segProg - dwellRatio) / (1 - dwellRatio);
-        }
-        eased = morphT * morphT * (3 - 2 * morphT);
-
-        s1 = shapes[segIdx];
-        s2 = shapes[segIdx + 1];
-      }
+      // Breathing effect: subtle scale pulse (3.5 second cycle)
+      const breathCycle = Math.sin(time * 0.0018) * 0.08 + 1.0; // 0.92 to 1.08 scale
 
       // AUTO-SPIN: continuous slow rotation driven by time
       const spinSpeed = variant === 'hero' ? 0.15 : 0.12;
@@ -181,9 +148,10 @@ export default function ParticleMorph({ scrollProgress, variant, className }: Pa
       const lerpSpeed = Math.min(delta * 6, 1);
       for (let i = 0; i < NUM_PARTICLES; i++) {
         const i3 = i * 3;
-        const tx = s1[i3] + (s2[i3] - s1[i3]) * eased + particleOffsets[i3] * (1 - eased * 0.5);
-        const ty = s1[i3 + 1] + (s2[i3 + 1] - s1[i3 + 1]) * eased + particleOffsets[i3 + 1] * (1 - eased * 0.5);
-        const tz = s1[i3 + 2] + (s2[i3 + 2] - s1[i3 + 2]) * eased + particleOffsets[i3 + 2] * (1 - eased * 0.5);
+        // Apply breathing scale to orb positions
+        const tx = s1[i3] * breathCycle + particleOffsets[i3] * 0.5;
+        const ty = s1[i3 + 1] * breathCycle + particleOffsets[i3 + 1] * 0.5;
+        const tz = s1[i3 + 2] * breathCycle + particleOffsets[i3 + 2] * 0.5;
         currentPositions[i3] += (tx - currentPositions[i3]) * lerpSpeed;
         currentPositions[i3 + 1] += (ty - currentPositions[i3 + 1]) * lerpSpeed;
         currentPositions[i3 + 2] += (tz - currentPositions[i3 + 2]) * lerpSpeed;
