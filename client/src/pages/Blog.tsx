@@ -152,7 +152,7 @@ export default function Blog() {
                       {/* Author */}
                       <div className="flex items-center gap-3 mb-4">
                         <img
-                          src={post.authorAvatar || "/Circuit2.png"}
+                          src={post.authorAvatar || "https://files.manuscdn.com/user_upload_by_module/session_file/102747574/VfJDjDQfCyAxxTcZ.png"}
                           alt={post.author}
                           className="w-8 h-8 rounded-full"
                         />

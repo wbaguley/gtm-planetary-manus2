@@ -96,7 +96,7 @@ export function AdminBlog() {
         title,
         slug,
         author,
-        authorAvatar: "/Circuit2.png",
+        authorAvatar: "https://files.manuscdn.com/user_upload_by_module/session_file/102747574/VfJDjDQfCyAxxTcZ.png",
         authorCompany,
         description,
         content,

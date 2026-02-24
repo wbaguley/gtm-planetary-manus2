@@ -1,5 +1,5 @@
-import { Component, useEffect, useRef, useMemo, useState, type ReactNode } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useEffect, useRef, useMemo, useState, Component, type ReactNode, type ErrorInfo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import {
@@ -28,47 +28,16 @@ function getParticleCount(): number {
   return window.innerWidth < 768 ? MOBILE_PARTICLES : DESKTOP_PARTICLES;
 }
 
-// ─── CSS Fallback Orb ──────────────────────────────────────────────
-
-function FallbackOrb() {
-  return (
-    <div className="w-full h-full flex items-center justify-center">
-      <div
-        className="w-64 h-64 rounded-full animate-pulse"
-        style={{
-          background:
-            'radial-gradient(circle at 40% 40%, rgba(168,85,247,0.6), rgba(168,85,247,0.1) 70%, transparent)',
-          boxShadow: '0 0 80px rgba(168,85,247,0.3), inset 0 0 40px rgba(168,85,247,0.1)',
-        }}
-      />
-    </div>
-  );
-}
-
-// ─── WebGL Error Boundary ──────────────────────────────────────────
-// Catches R3F / WebGL runtime errors (context loss, shader failures)
-// and falls back to CSS orb
-
-class WebGLErrorBoundary extends Component<
-  { fallback: ReactNode; children: ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { fallback: ReactNode; children: ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(): { hasError: boolean } {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error) {
-    console.warn('[ParticleMorph] WebGL failed, using CSS fallback:', error.message);
-  }
-
-  render() {
-    if (this.state.hasError) return this.props.fallback;
-    return this.props.children;
+function hasWebGL(): boolean {
+  try {
+    const canvas = document.createElement('canvas');
+    return !!(
+      canvas.getContext('webgl2') ||
+      canvas.getContext('webgl') ||
+      canvas.getContext('experimental-webgl')
+    );
+  } catch {
+    return false;
   }
 }
 
@@ -144,33 +113,6 @@ const fragmentShader = /* glsl */ `
     gl_FragColor = vec4(color, (glow + core) * vAlpha);
   }
 `;
-
-// ─── Ensure renderer clear color is transparent ────────────────────
-
-function TransparentBackground() {
-  const { gl } = useThree();
-  useEffect(() => {
-    gl.setClearColor(0x000000, 0);
-  }, [gl]);
-  return null;
-}
-
-// ─── WebGL Context Loss Detector ───────────────────────────────────
-// Listens for webglcontextlost on the R3F canvas and triggers fallback
-
-function ContextLossDetector({ onContextLost }: { onContextLost: () => void }) {
-  const { gl } = useThree();
-  useEffect(() => {
-    const canvas = gl.domElement;
-    const handler = () => {
-      console.warn('[ParticleMorph] WebGL context lost');
-      onContextLost();
-    };
-    canvas.addEventListener('webglcontextlost', handler);
-    return () => canvas.removeEventListener('webglcontextlost', handler);
-  }, [gl, onContextLost]);
-  return null;
-}
 
 // ─── ParticlePoints Component (core morph logic) ───────────────────
 
@@ -325,20 +267,61 @@ function ParticlePoints({
 }
 
 // ─── Glass Sphere Background ───────────────────────────────────────
-// Uses basic material (no lights needed) with very low opacity
 
 function GlassSphere() {
   return (
     <mesh>
       <sphereGeometry args={[1.6, 64, 64]} />
-      <meshBasicMaterial
+      <meshPhysicalMaterial
         transparent
         opacity={0.03}
         color="#a855f7"
-        side={THREE.BackSide}
+        clearcoat={1}
+        roughness={0.1}
       />
     </mesh>
   );
+}
+
+// ─── CSS Fallback Orb ──────────────────────────────────────────────
+
+function FallbackOrb() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div
+        className="w-64 h-64 rounded-full animate-pulse"
+        style={{
+          background:
+            'radial-gradient(circle at 40% 40%, rgba(168,85,247,0.6), rgba(168,85,247,0.1) 70%, transparent)',
+          boxShadow: '0 0 80px rgba(168,85,247,0.3), inset 0 0 40px rgba(168,85,247,0.1)',
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── Main Exported Component ───────────────────────────────────────
+
+// ─── WebGL Error Boundary ──────────────────────────────────────────
+
+class WebGLErrorBoundary extends Component<
+  { fallback: ReactNode; children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { fallback: ReactNode; children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.warn('WebGL ParticleMorph error, falling back to CSS:', error.message, info);
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
 }
 
 // ─── Main Exported Component ───────────────────────────────────────
@@ -348,41 +331,42 @@ export default function ParticleMorph({
   variant,
   className,
 }: ParticleMorphProps) {
-  const [useFallback, setUseFallback] = useState(false);
+  const [webglAvailable, setWebglAvailable] = useState(true);
+  const [contextLost, setContextLost] = useState(false);
 
-  const containerStyle = { minHeight: '100%', minWidth: '100%' };
+  useEffect(() => {
+    setWebglAvailable(hasWebGL());
+  }, []);
 
-  if (useFallback) {
-    return (
-      <div className={`relative ${className || ''}`} style={containerStyle}>
-        <FallbackOrb />
-      </div>
-    );
+  const fallbackEl = (
+    <div className={`relative ${className || ''}`} style={{ minHeight: '100%', minWidth: '100%' }}>
+      <FallbackOrb />
+    </div>
+  );
+
+  if (!webglAvailable || contextLost) {
+    return fallbackEl;
   }
 
   return (
-    <div className={`relative ${className || ''}`} style={containerStyle}>
-      <WebGLErrorBoundary
-        fallback={
-          <div className="w-full h-full">
-            <FallbackOrb />
-          </div>
-        }
-      >
+    <div className={`relative ${className || ''}`} style={{ minHeight: '100%', minWidth: '100%' }}>
+      <WebGLErrorBoundary fallback={<FallbackOrb />}>
         <Canvas
           camera={{ position: [0, 0, 4.5], fov: 50 }}
           dpr={[1, 2]}
-          gl={{ antialias: false, alpha: true, premultipliedAlpha: false }}
+          gl={{ antialias: false, alpha: true }}
           style={{ background: 'transparent' }}
           onCreated={({ gl }) => {
-            gl.setClearColor(0x000000, 0);
+            const canvas = gl.domElement;
+            canvas.addEventListener('webglcontextlost', (e) => {
+              e.preventDefault();
+              setContextLost(true);
+            });
           }}
         >
-          <TransparentBackground />
-          <ContextLossDetector onContextLost={() => setUseFallback(true)} />
           <ParticlePoints scrollProgress={scrollProgress} variant={variant} />
           <GlassSphere />
-          <EffectComposer multisampling={0} frameBufferType={THREE.HalfFloatType}>
+          <EffectComposer>
             <Bloom
               luminanceThreshold={0.2}
               intensity={1.5}

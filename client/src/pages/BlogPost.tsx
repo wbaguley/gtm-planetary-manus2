@@ -126,7 +126,7 @@ export default function BlogPost() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-8 border-b border-border">
           <div className="flex items-center gap-3">
             <img
-              src={post.authorAvatar || "/Circuit2.png"}
+              src={post.authorAvatar || "https://files.manuscdn.com/user_upload_by_module/session_file/102747574/VfJDjDQfCyAxxTcZ.png"}
               alt={post.author}
               className="w-12 h-12 rounded-full"
             />
