@@ -1,15 +1,31 @@
 import { Router } from 'express';
 import { storagePut } from '../storage.js';
 import { randomBytes } from 'crypto';
+import { sdk } from '../_core/sdk.js';
 
 const router = Router();
 
+const ALLOWED_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp']);
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 router.post('/upload-image', async (req, res) => {
   try {
+    // Authenticate: require admin
+    const user = await sdk.authenticateRequest(req);
+    if (user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     const { image, filename } = req.body;
 
     if (!image || !filename) {
       return res.status(400).json({ error: 'Missing image or filename' });
+    }
+
+    // Validate file extension
+    const ext = (filename.split('.').pop() || '').toLowerCase();
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
+      return res.status(400).json({ error: 'File type not allowed' });
     }
 
     // Extract base64 data and content type
@@ -22,8 +38,12 @@ router.post('/upload-image', async (req, res) => {
     const base64Data = matches[2];
     const buffer = Buffer.from(base64Data, 'base64');
 
+    // Validate file size
+    if (buffer.length > MAX_FILE_SIZE) {
+      return res.status(400).json({ error: 'File too large (max 5MB)' });
+    }
+
     // Generate unique filename
-    const ext = filename.split('.').pop();
     const randomSuffix = randomBytes(8).toString('hex');
     const key = `blog-images/${Date.now()}-${randomSuffix}.${ext}`;
 
@@ -33,7 +53,11 @@ router.post('/upload-image', async (req, res) => {
     res.json({ url });
   } catch (error: any) {
     console.error('Image upload error:', error);
-    res.status(500).json({ error: error.message || 'Failed to upload image' });
+    // Don't leak internal error details
+    if (error?.statusCode === 403 || error?.message?.includes('Forbidden') || error?.message?.includes('session')) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    res.status(500).json({ error: 'Failed to upload image' });
   }
 });
 

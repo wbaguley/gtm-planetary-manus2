@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,10 +17,8 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedPainPoint, setExpandedPainPoint] = useState<string | null>(null);
-  const [scrollY, setScrollY] = useState(0);
   const [heroProgress, setHeroProgress] = useState(0);
   const [painProgress, setPainProgress] = useState(0);
-  const particlesInitialized = useRef(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const painRef = useRef<HTMLDivElement>(null);
   const capabilitiesRef = useRef<HTMLDivElement>(null);
@@ -167,15 +165,6 @@ export default function Home() {
     contactMutation.mutate(formData);
   };
 
-  // Scroll tracking
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   // GSAP ScrollTrigger for pinned sections
   useEffect(() => {
     // Hero section pin - morphing object stays while you scroll
@@ -232,38 +221,6 @@ export default function Home() {
     return () => {
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
-  }, []);
-
-  // Particles.js initialization
-  useEffect(() => {
-    if (!particlesInitialized.current && typeof window !== "undefined") {
-      particlesInitialized.current = true;
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
-      script.async = true;
-      script.onload = () => {
-        if ((window as any).particlesJS) {
-          (window as any).particlesJS("particles-js", {
-            particles: {
-              number: { value: 60, density: { enable: true, value_area: 900 } },
-              color: { value: "#ad18fc" },
-              shape: { type: "circle" },
-              opacity: { value: 0.4, random: true, anim: { enable: true, speed: 0.8, opacity_min: 0.1 } },
-              size: { value: 2.5, random: true, anim: { enable: true, speed: 1.5, size_min: 0.1 } },
-              line_linked: { enable: true, distance: 150, color: "#ad18fc", opacity: 0.3, width: 0.8 },
-              move: { enable: true, speed: 0.8, direction: "none", random: true, straight: false, out_mode: "out" },
-            },
-            interactivity: {
-              detect_on: "canvas",
-              events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" }, resize: true },
-              modes: { grab: { distance: 140, line_linked: { opacity: 0.6 } }, push: { particles_nb: 3 } },
-            },
-            retina_detect: true,
-          });
-        }
-      };
-      document.head.appendChild(script);
-    }
   }, []);
 
   // Scroll reveal animation for non-pinned sections
@@ -356,7 +313,7 @@ export default function Home() {
       >
         {/* Parallax Background */}
         <div className="absolute inset-0 grid-bg" style={{ transform: `translateY(${heroProgress * 100}px)` }} />
-        <div id="particles-js" className="absolute inset-0" style={{ transform: `translateY(${heroProgress * 60}px)` }} />
+        <div className="absolute inset-0" style={{ transform: `translateY(${heroProgress * 60}px)` }} />
 
         {/* Subtle gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/40 to-transparent z-[1]" />
@@ -572,8 +529,8 @@ export default function Home() {
             {/* Right: Real-time particle morphing for pain points */}
             <div className="h-[500px] lg:h-[600px] relative flex items-center justify-center">
               <ParticleMorph
-                scrollProgress={painProgress}
-                variant="painPoints"
+                scrollProgress={0}
+                variant="hero"
                 className="w-full h-full"
               />
             </div>
@@ -789,10 +746,10 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500">© 2026 GTM Planetary LLC. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="#" className="text-sm text-gray-500 hover:text-primary transition-colors">
+              <a href="/privacy-policy" className="text-sm text-gray-500 hover:text-primary transition-colors">
                 Privacy Policy
               </a>
-              <a href="#" className="text-sm text-gray-500 hover:text-primary transition-colors">
+              <a href="/terms-and-conditions" className="text-sm text-gray-500 hover:text-primary transition-colors">
                 Terms & Conditions
               </a>
               <a href="/admin/blog" className="text-sm text-gray-500 hover:text-primary transition-colors opacity-20">
