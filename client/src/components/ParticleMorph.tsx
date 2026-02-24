@@ -1,7 +1,4 @@
-import { useEffect, useRef, useMemo, useState, Component, type ReactNode, type ErrorInfo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   orbPositions,
   hardHatPositions,
@@ -10,7 +7,7 @@ import {
   voiceAIPositions,
 } from './particle-shapes';
 
-// ─── Types ─────────────────────────────────────────────────────────
+// ─── Types & Constants ─────────────────────────────────────────────
 
 interface ParticleMorphProps {
   scrollProgress: number;
@@ -18,116 +15,24 @@ interface ParticleMorphProps {
   className?: string;
 }
 
-// ─── Constants ─────────────────────────────────────────────────────
+const NUM_PARTICLES = 12000;
+const PERSPECTIVE = 4;
 
-const DESKTOP_PARTICLES = 12000;
-const MOBILE_PARTICLES = 4000;
+// GTM Planetary brand purple
+const BRAND_PURPLE: [number, number, number] = [168, 85, 247];
 
-function getParticleCount(): number {
-  if (typeof window === 'undefined') return DESKTOP_PARTICLES;
-  return window.innerWidth < 768 ? MOBILE_PARTICLES : DESKTOP_PARTICLES;
-}
+// ─── Component ─────────────────────────────────────────────────────
 
-function hasWebGL(): boolean {
-  try {
-    const canvas = document.createElement('canvas');
-    return !!(
-      canvas.getContext('webgl2') ||
-      canvas.getContext('webgl') ||
-      canvas.getContext('experimental-webgl')
-    );
-  } catch {
-    return false;
-  }
-}
-
-// ─── Vertex Shader ─────────────────────────────────────────────────
-
-const vertexShader = /* glsl */ `
-  attribute vec3 positionB;
-  attribute float aSize;
-  attribute float aRandom;
-
-  uniform float uMorphT;
-  uniform float uTime;
-  uniform float uPixelRatio;
-
-  varying float vAlpha;
-  varying float vRandom;
-
-  void main() {
-    // Hermite interpolation for smooth morph
-    float t = uMorphT;
-    t = t * t * (3.0 - 2.0 * t);
-
-    // Interpolate between shape A (position) and shape B (positionB)
-    vec3 morphed = mix(position, positionB, t);
-
-    // Organic noise wobble
-    float wobble = sin(morphed.x * 3.0 + uTime * 0.8) * cos(morphed.y * 2.5 + uTime * 0.6) * 0.02;
-    morphed += wobble * aRandom;
-
-    vec4 mvPosition = modelViewMatrix * vec4(morphed, 1.0);
-
-    // Perspective-scaled point size
-    float size = aSize * uPixelRatio * (150.0 / -mvPosition.z);
-    gl_PointSize = size;
-
-    // Alpha based on depth + size
-    vAlpha = smoothstep(0.0, 0.5, aSize / 3.0) * (0.6 + 0.4 * (1.0 / (1.0 + abs(mvPosition.z) * 0.1)));
-    vRandom = aRandom;
-
-    gl_Position = projectionMatrix * mvPosition;
-  }
-`;
-
-// ─── Fragment Shader ───────────────────────────────────────────────
-
-const fragmentShader = /* glsl */ `
-  uniform vec3 uColor1;
-  uniform vec3 uColor2;
-  uniform float uTime;
-
-  varying float vAlpha;
-  varying float vRandom;
-
-  void main() {
-    // Soft radial glow circle
-    float dist = length(gl_PointCoord - vec2(0.5));
-    if (dist > 0.5) discard;
-
-    // Power-curve falloff for premium glow
-    float glow = 1.0 - smoothstep(0.0, 0.5, dist);
-    glow = pow(glow, 2.0);
-
-    // Core brightness boost
-    float core = smoothstep(0.15, 0.0, dist) * 0.5;
-
-    // Color blend between brand purple and accent pink
-    float colorMix = sin(vRandom * 6.28 + uTime * 0.3) * 0.5 + 0.5;
-    vec3 color = mix(uColor1, uColor2, colorMix * 0.3);
-
-    // Boost brightness for additive blending
-    color *= 1.2 + core;
-
-    gl_FragColor = vec4(color, (glow + core) * vAlpha);
-  }
-`;
-
-// ─── ParticlePoints Component (core morph logic) ───────────────────
-
-function ParticlePoints({
-  scrollProgress,
-  variant,
-}: {
-  scrollProgress: number;
-  variant: 'hero' | 'painPoints';
-}) {
-  const pointsRef = useRef<THREE.Points>(null);
+export default function ParticleMorph({ scrollProgress, variant, className }: ParticleMorphProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const progressRef = useRef(0);
-  const NUM_PARTICLES = useMemo(getParticleCount, []);
+  const animFrameRef = useRef<number>(0);
+  const lastTimeRef = useRef(0);
+  const dprRef = useRef(1);
+  const logicalWidthRef = useRef(0);
+  const logicalHeightRef = useRef(0);
+  const rotationRef = useRef(0);
 
-  // Pre-generate all shapes
   const shapes = useMemo(() => {
     if (variant === 'hero') {
       return [
@@ -139,243 +44,224 @@ function ParticlePoints({
         orbPositions(NUM_PARTICLES),
       ];
     }
-    // painPoints variant just shows static orb
+    // Pain points: static orb (single shape, no morphing)
     return [orbPositions(NUM_PARTICLES)];
-  }, [variant, NUM_PARTICLES]);
+  }, [variant]);
 
-  // Buffer attributes
-  const { positionsA, positionsB, sizes, randoms } = useMemo(() => {
-    const posA = new Float32Array(shapes[0]);
-    const posB = new Float32Array(shapes.length > 1 ? shapes[1] : shapes[0]);
-    const s = new Float32Array(NUM_PARTICLES);
-    const r = new Float32Array(NUM_PARTICLES);
-    for (let i = 0; i < NUM_PARTICLES; i++) {
-      s[i] = 1.0 + Math.random() * 2.0;
-      r[i] = Math.random();
+  // Current particle positions (mutable for performance)
+  const currentPositions = useMemo(() => {
+    const pos = new Float32Array(NUM_PARTICLES * 3);
+    const first = shapes[0];
+    for (let i = 0; i < NUM_PARTICLES * 3; i++) pos[i] = first[i];
+    return pos;
+  }, [shapes]);
+
+  // Per-particle random offsets for organic feel
+  const particleOffsets = useMemo(() => {
+    const offsets = new Float32Array(NUM_PARTICLES * 3);
+    for (let i = 0; i < NUM_PARTICLES * 3; i++) {
+      offsets[i] = (Math.random() - 0.5) * 0.05;
     }
-    return { positionsA: posA, positionsB: posB, sizes: s, randoms: r };
-  }, [shapes, NUM_PARTICLES]);
+    return offsets;
+  }, []);
 
-  // Shader material uniforms
-  const uniforms = useMemo(
-    () => ({
-      uMorphT: { value: 0 },
-      uTime: { value: 0 },
-      uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
-      uColor1: { value: new THREE.Color('#a855f7') }, // brand purple
-      uColor2: { value: new THREE.Color('#ec4899') }, // accent pink
-    }),
-    []
-  );
+  // Per-particle size variation
+  const particleSizes = useMemo(() => {
+    const sizes = new Float32Array(NUM_PARTICLES);
+    for (let i = 0; i < NUM_PARTICLES; i++) {
+      sizes[i] = 1.0 + Math.random() * 1.3;
+    }
+    return sizes;
+  }, []);
 
-  // Track current segment so we can update buffer B when it changes
-  const currentSegRef = useRef(0);
+  const project = useCallback((x: number, y: number, z: number, w: number, h: number) => {
+    const scale = PERSPECTIVE / (PERSPECTIVE + z);
+    return {
+      x: x * scale * (w * 0.22) + w / 2,
+      y: -y * scale * (h * 0.22) + h / 2,
+      scale,
+    };
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return;
+
+    let isActive = true;
+
+    const resizeCanvas = () => {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+
+      const rect = parent.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+
+      if (w === 0 || h === 0) return;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dprRef.current = dpr;
+      logicalWidthRef.current = w;
+      logicalHeightRef.current = h;
+
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+    };
+
+    resizeCanvas();
+    const resizeTimeout = setTimeout(resizeCanvas, 100);
+    const resizeTimeout2 = setTimeout(resizeCanvas, 500);
+    const resizeTimeout3 = setTimeout(resizeCanvas, 1000);
+    window.addEventListener('resize', resizeCanvas);
+
+    let resizeObserver: ResizeObserver | null = null;
+    const parent = canvas.parentElement;
+    if (parent && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => resizeCanvas());
+      resizeObserver.observe(parent);
+    }
+
+    const animate = (time: number) => {
+      if (!isActive) return;
+      animFrameRef.current = requestAnimationFrame(animate);
+
+      const delta = lastTimeRef.current ? (time - lastTimeRef.current) / 1000 : 0.016;
+      lastTimeRef.current = time;
+
+      const w = logicalWidthRef.current;
+      const h = logicalHeightRef.current;
+      const dpr = dprRef.current;
+
+      if (w === 0 || h === 0) return;
+
+      const progress = progressRef.current;
+      const numShapes = shapes.length;
+
+      // For single-shape variant, no morphing needed
+      let eased = 0;
+      let s1 = shapes[0];
+      let s2 = shapes[0];
+
+      if (numShapes > 1) {
+        const segLen = 1 / (numShapes - 1);
+        const segIdx = Math.min(Math.floor(progress / segLen), numShapes - 2);
+        const segProg = (progress - segIdx * segLen) / segLen;
+
+        // Dwell/plateau: shape holds for 65% of segment, transitions during 35%
+        const dwellRatio = 0.65;
+        let morphT: number;
+        if (segProg <= dwellRatio) {
+          morphT = 0;
+        } else {
+          morphT = (segProg - dwellRatio) / (1 - dwellRatio);
+        }
+        eased = morphT * morphT * (3 - 2 * morphT);
+
+        s1 = shapes[segIdx];
+        s2 = shapes[segIdx + 1];
+      }
+
+      // AUTO-SPIN: continuous slow rotation driven by time
+      const spinSpeed = variant === 'hero' ? 0.15 : 0.12;
+      rotationRef.current += delta * spinSpeed;
+      const rotAngle = rotationRef.current;
+      const cosR = Math.cos(rotAngle);
+      const sinR = Math.sin(rotAngle);
+
+      // Very subtle tilt oscillation
+      const tiltAngle = Math.sin(time * 0.0003) * 0.06;
+      const cosT = Math.cos(tiltAngle);
+      const sinT = Math.sin(tiltAngle);
+
+      const lerpSpeed = Math.min(delta * 6, 1);
+      for (let i = 0; i < NUM_PARTICLES; i++) {
+        const i3 = i * 3;
+        const tx = s1[i3] + (s2[i3] - s1[i3]) * eased + particleOffsets[i3] * (1 - eased * 0.5);
+        const ty = s1[i3 + 1] + (s2[i3 + 1] - s1[i3 + 1]) * eased + particleOffsets[i3 + 1] * (1 - eased * 0.5);
+        const tz = s1[i3 + 2] + (s2[i3 + 2] - s1[i3 + 2]) * eased + particleOffsets[i3 + 2] * (1 - eased * 0.5);
+        currentPositions[i3] += (tx - currentPositions[i3]) * lerpSpeed;
+        currentPositions[i3 + 1] += (ty - currentPositions[i3 + 1]) * lerpSpeed;
+        currentPositions[i3 + 2] += (tz - currentPositions[i3 + 2]) * lerpSpeed;
+      }
+
+      ctx.resetTransform();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      ctx.globalCompositeOperation = 'lighter';
+
+      const [cr, cg, cb] = BRAND_PURPLE;
+
+      for (let i = 0; i < NUM_PARTICLES; i++) {
+        const i3 = i * 3;
+        let x = currentPositions[i3];
+        let y = currentPositions[i3 + 1];
+        let zVal = currentPositions[i3 + 2];
+
+        // Y-axis rotation (auto-spin)
+        const rx = x * cosR - zVal * sinR;
+        const rz = x * sinR + zVal * cosR;
+        x = rx;
+        zVal = rz;
+
+        // Subtle X-axis tilt
+        const ry = y * cosT - zVal * sinT;
+        const rz2 = y * sinT + zVal * cosT;
+        y = ry;
+        zVal = rz2;
+
+        const proj = project(x, y, zVal, w, h);
+        if (proj.scale <= 0) continue;
+
+        const size = particleSizes[i] * proj.scale;
+        const alpha = Math.min(1, proj.scale * 0.8) * (0.5 + Math.random() * 0.1);
+
+        ctx.beginPath();
+        ctx.arc(proj.x, proj.y, size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${alpha})`;
+        ctx.fill();
+      }
+
+      ctx.globalCompositeOperation = 'source-over';
+
+      // Subtle glow behind shape
+      const gradient = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w * 0.35);
+      gradient.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, 0.06)`);
+      gradient.addColorStop(0.5, `rgba(${cr}, ${cg}, ${cb}, 0.02)`);
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, w, h);
+    };
+
+    animFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      isActive = false;
+      cancelAnimationFrame(animFrameRef.current);
+      clearTimeout(resizeTimeout);
+      clearTimeout(resizeTimeout2);
+      clearTimeout(resizeTimeout3);
+      window.removeEventListener('resize', resizeCanvas);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
+  }, [shapes, currentPositions, particleOffsets, particleSizes, project, variant]);
 
   useEffect(() => {
     progressRef.current = Math.max(0, Math.min(1, scrollProgress));
   }, [scrollProgress]);
 
-  useFrame((state) => {
-    if (!pointsRef.current) return;
-
-    const elapsed = state.clock.elapsedTime;
-    uniforms.uTime.value = elapsed;
-
-    const progress = progressRef.current;
-    const numShapes = shapes.length;
-
-    if (numShapes <= 1) {
-      // Static orb — no morphing
-      uniforms.uMorphT.value = 0;
-      pointsRef.current.rotation.y = elapsed * 0.12;
-      pointsRef.current.rotation.x = Math.sin(elapsed * 0.08) * 0.1;
-      return;
-    }
-
-    const segLen = 1 / (numShapes - 1);
-    const segIdx = Math.min(Math.floor(progress / segLen), numShapes - 2);
-    const segProg = (progress - segIdx * segLen) / segLen;
-
-    // Dwell/plateau: shape holds for 65%, transitions during 35%
-    const dwellRatio = 0.65;
-    let morphT: number;
-    if (segProg <= dwellRatio) {
-      morphT = 0;
-    } else {
-      morphT = (segProg - dwellRatio) / (1 - dwellRatio);
-    }
-
-    uniforms.uMorphT.value = morphT;
-
-    // Update buffer attributes when segment changes
-    if (segIdx !== currentSegRef.current) {
-      currentSegRef.current = segIdx;
-      const geo = pointsRef.current.geometry;
-      const posAttr = geo.getAttribute('position') as THREE.BufferAttribute;
-      const posBAttr = geo.getAttribute('positionB') as THREE.BufferAttribute;
-
-      const s1 = shapes[segIdx];
-      const s2 = shapes[segIdx + 1];
-
-      for (let j = 0; j < NUM_PARTICLES * 3; j++) {
-        (posAttr.array as Float32Array)[j] = s1[j];
-        (posBAttr.array as Float32Array)[j] = s2[j];
-      }
-      posAttr.needsUpdate = true;
-      posBAttr.needsUpdate = true;
-    }
-
-    // Auto-rotate
-    pointsRef.current.rotation.y = elapsed * 0.15;
-    pointsRef.current.rotation.x = Math.sin(elapsed * 0.08) * 0.1;
-  });
-
-  return (
-    <points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[positionsA, 3]}
-          count={NUM_PARTICLES}
-        />
-        <bufferAttribute
-          attach="attributes-positionB"
-          args={[positionsB, 3]}
-          count={NUM_PARTICLES}
-        />
-        <bufferAttribute
-          attach="attributes-aSize"
-          args={[sizes, 1]}
-          count={NUM_PARTICLES}
-        />
-        <bufferAttribute
-          attach="attributes-aRandom"
-          args={[randoms, 1]}
-          count={NUM_PARTICLES}
-        />
-      </bufferGeometry>
-      <shaderMaterial
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        uniforms={uniforms}
-        transparent
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
-  );
-}
-
-// ─── Glass Sphere Background ───────────────────────────────────────
-
-function GlassSphere() {
-  return (
-    <mesh>
-      <sphereGeometry args={[1.6, 64, 64]} />
-      <meshPhysicalMaterial
-        transparent
-        opacity={0.03}
-        color="#a855f7"
-        clearcoat={1}
-        roughness={0.1}
-      />
-    </mesh>
-  );
-}
-
-// ─── CSS Fallback Orb ──────────────────────────────────────────────
-
-function FallbackOrb() {
-  return (
-    <div className="w-full h-full flex items-center justify-center">
-      <div
-        className="w-64 h-64 rounded-full animate-pulse"
-        style={{
-          background:
-            'radial-gradient(circle at 40% 40%, rgba(168,85,247,0.6), rgba(168,85,247,0.1) 70%, transparent)',
-          boxShadow: '0 0 80px rgba(168,85,247,0.3), inset 0 0 40px rgba(168,85,247,0.1)',
-        }}
-      />
-    </div>
-  );
-}
-
-// ─── Main Exported Component ───────────────────────────────────────
-
-// ─── WebGL Error Boundary ──────────────────────────────────────────
-
-class WebGLErrorBoundary extends Component<
-  { fallback: ReactNode; children: ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { fallback: ReactNode; children: ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.warn('WebGL ParticleMorph error, falling back to CSS:', error.message, info);
-  }
-  render() {
-    if (this.state.hasError) return this.props.fallback;
-    return this.props.children;
-  }
-}
-
-// ─── Main Exported Component ───────────────────────────────────────
-
-export default function ParticleMorph({
-  scrollProgress,
-  variant,
-  className,
-}: ParticleMorphProps) {
-  const [webglAvailable, setWebglAvailable] = useState(true);
-  const [contextLost, setContextLost] = useState(false);
-
-  useEffect(() => {
-    setWebglAvailable(hasWebGL());
-  }, []);
-
-  const fallbackEl = (
-    <div className={`relative ${className || ''}`} style={{ minHeight: '100%', minWidth: '100%' }}>
-      <FallbackOrb />
-    </div>
-  );
-
-  if (!webglAvailable || contextLost) {
-    return fallbackEl;
-  }
-
   return (
     <div className={`relative ${className || ''}`} style={{ minHeight: '100%', minWidth: '100%' }}>
-      <WebGLErrorBoundary fallback={<FallbackOrb />}>
-        <Canvas
-          camera={{ position: [0, 0, 4.5], fov: 50 }}
-          dpr={[1, 2]}
-          gl={{ antialias: false, alpha: true }}
-          style={{ background: 'transparent' }}
-          onCreated={({ gl }) => {
-            const canvas = gl.domElement;
-            canvas.addEventListener('webglcontextlost', (e) => {
-              e.preventDefault();
-              setContextLost(true);
-            });
-          }}
-        >
-          <ParticlePoints scrollProgress={scrollProgress} variant={variant} />
-          <GlassSphere />
-          <EffectComposer>
-            <Bloom
-              luminanceThreshold={0.2}
-              intensity={1.5}
-              radius={0.8}
-              mipmapBlur
-            />
-          </EffectComposer>
-        </Canvas>
-      </WebGLErrorBoundary>
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full"
+        style={{ display: 'block', width: '100%', height: '100%' }}
+      />
     </div>
   );
 }
