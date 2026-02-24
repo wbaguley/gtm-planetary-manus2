@@ -300,3 +300,7 @@
 - [x] Add breathing effect (subtle scale pulse in/out, 3.5 second cycle)
 - [x] Apply to both hero and pain points sections
 - [x] Test and verify
+
+## Reduce Hero Section Scroll Length
+- [x] Reduce hero ScrollTrigger pin length (currently 400%)
+- [x] Test scroll pacing feels natural
