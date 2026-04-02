@@ -343,3 +343,7 @@
 ## Pain Points & How It Works — Entrance Animations
 - [x] Replace .reveal class on Pain Points section header and cards with staggered IntersectionObserver
 - [x] Replace .reveal class on How It Works section header and steps with staggered IntersectionObserver
+
+## About & Contact — Entrance Animations
+- [x] Replace .reveal class on About section with staggered IntersectionObserver
+- [x] Replace .reveal class on Contact section with staggered IntersectionObserver

@@ -200,6 +200,10 @@ export default function Home() {
   const [painPointsVisible, setPainPointsVisible] = useState(false);
   const howItWorksRef = useRef<HTMLDivElement>(null);
   const [howItWorksVisible, setHowItWorksVisible] = useState(false);
+  const aboutRef = useRef<HTMLDivElement>(null);
+  const [aboutVisible, setAboutVisible] = useState(false);
+  const contactRef = useRef<HTMLDivElement>(null);
+  const [contactVisible, setContactVisible] = useState(false);
 
   // Shared helper to wire an IntersectionObserver to a visibility toggle
   function useSectionReveal(
@@ -232,6 +236,8 @@ export default function Home() {
   useSectionReveal(capabilitiesRef, setCapabilitiesVisible);
   useSectionReveal(painPointsRef, setPainPointsVisible);
   useSectionReveal(howItWorksRef, setHowItWorksVisible);
+  useSectionReveal(aboutRef, setAboutVisible);
+  useSectionReveal(contactRef, setContactVisible);
   useSectionReveal(heroContentRef, setHeroVisible, 0.2);
 
   const contactMutation = trpc.contact.submit.useMutation({
@@ -818,7 +824,7 @@ export default function Home() {
       {/* ═══════════════════════════════════════════════════════════════
           ABOUT — Updated messaging
          ═══════════════════════════════════════════════════════════════ */}
-      <section id="about" className="py-24 bg-black relative">
+      <section id="about" ref={aboutRef} className="py-24 bg-black relative">
         <div className="absolute inset-0 opacity-5">
           <div
             className="absolute inset-0"
@@ -828,7 +834,14 @@ export default function Home() {
           />
         </div>
         <div className="container relative z-10">
-          <div className="text-center mb-12 reveal">
+          <div
+            className="text-center mb-12"
+            style={{
+              opacity: aboutVisible ? 1 : 0,
+              transform: aboutVisible ? "translateY(0)" : "translateY(20px)",
+              transition: "opacity 0.7s ease, transform 0.7s ease",
+            }}
+          >
             <div className="inline-block px-4 py-1.5 border border-primary/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6">
               Why GTM Planetary
             </div>
@@ -837,7 +850,15 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="max-w-3xl mx-auto space-y-6 reveal">
+          <div
+            className="max-w-3xl mx-auto space-y-6"
+            style={{
+              opacity: aboutVisible ? 1 : 0,
+              transform: aboutVisible ? "translateY(0)" : "translateY(20px)",
+              transition: "opacity 0.7s ease, transform 0.7s ease",
+              transitionDelay: "150ms",
+            }}
+          >
             <p className="text-lg text-gray-300 leading-relaxed">
               GTM Planetary builds custom fine-tuned AI models and autonomous operational agents exclusively for trade businesses.
             </p>
@@ -862,9 +883,16 @@ export default function Home() {
       {/* ═══════════════════════════════════════════════════════════════
           CONTACT
          ═══════════════════════════════════════════════════════════════ */}
-      <section id="contact" className="py-24 bg-black relative">
+      <section id="contact" ref={contactRef} className="py-24 bg-black relative">
         <div className="container">
-          <div className="text-center mb-12 reveal">
+          <div
+            className="text-center mb-12"
+            style={{
+              opacity: contactVisible ? 1 : 0,
+              transform: contactVisible ? "translateY(0)" : "translateY(20px)",
+              transition: "opacity 0.7s ease, transform 0.7s ease",
+            }}
+          >
             <div className="inline-block px-4 py-1.5 border border-primary/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6">
               Get Started
             </div>
@@ -874,7 +902,14 @@ export default function Home() {
           </div>
 
           <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12">
-            <div className="reveal">
+            <div
+              style={{
+                opacity: contactVisible ? 1 : 0,
+                transform: contactVisible ? "translateY(0)" : "translateY(20px)",
+                transition: "opacity 0.6s ease, transform 0.6s ease",
+                transitionDelay: "100ms",
+              }}
+            >
               <h3 className="font-orbitron text-2xl font-bold mb-6 text-white">Get In Touch</h3>
               <div className="space-y-6">
                 {[
@@ -902,7 +937,14 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="reveal">
+            <div
+              style={{
+                opacity: contactVisible ? 1 : 0,
+                transform: contactVisible ? "translateY(0)" : "translateY(20px)",
+                transition: "opacity 0.6s ease, transform 0.6s ease",
+                transitionDelay: "220ms",
+              }}
+            >
               <h3 className="font-orbitron text-2xl font-bold mb-6 text-white">Send A Message</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {[
