@@ -195,6 +195,25 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedPainPoint, setExpandedPainPoint] = useState<string | null>(null);
   const capabilitiesRef = useRef<HTMLDivElement>(null);
+  const [capabilitiesVisible, setCapabilitiesVisible] = useState(false);
+
+  useEffect(() => {
+    const el = capabilitiesRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          setCapabilitiesVisible(false);
+          const t = setTimeout(() => setCapabilitiesVisible(true), 60);
+          return () => clearTimeout(t);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const heroContentRef = useRef<HTMLDivElement>(null);
   const [heroVisible, setHeroVisible] = useState(false);
 
@@ -583,7 +602,15 @@ export default function Home() {
         </div>
 
         <div className="container relative z-10">
-          <div className="text-center mb-16 reveal">
+          <div
+            className="text-center mb-16"
+            style={{
+              opacity: capabilitiesVisible ? 1 : 0,
+              transform: capabilitiesVisible ? "translateY(0)" : "translateY(20px)",
+              transition: "opacity 0.7s ease, transform 0.7s ease",
+              transitionDelay: "0ms",
+            }}
+          >
             <div className="inline-block px-4 py-1.5 border border-primary/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6">
               What We Deploy
             </div>
@@ -596,10 +623,16 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {aiCapabilities.map((cap) => (
+            {aiCapabilities.map((cap, i) => (
               <div
                 key={cap.id}
-                className={`reveal cap-card group relative bg-black/80 backdrop-blur-sm border ${cap.borderColor} rounded-xl p-6 hover:border-primary/60 transition-all duration-500 cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10`}
+                className={`cap-card group relative bg-black/80 backdrop-blur-sm border ${cap.borderColor} rounded-xl p-6 hover:border-primary/60 transition-all duration-500 cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10`}
+                style={{
+                  opacity: capabilitiesVisible ? 1 : 0,
+                  transform: capabilitiesVisible ? "translateY(0)" : "translateY(24px)",
+                  transition: "opacity 0.6s ease, transform 0.6s ease",
+                  transitionDelay: `${120 + i * 80}ms`,
+                }}
               >
                 {/* Gradient accent top */}
                 <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${cap.color} rounded-t-xl opacity-60 group-hover:opacity-100 transition-opacity`} />

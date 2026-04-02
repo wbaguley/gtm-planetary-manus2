@@ -336,3 +336,6 @@
 
 ## Hero Text Entrance Animations
 - [x] Add staggered fade/slide-in entrance for headline, subtext, CTAs, and stats on viewport entry
+
+## AI Capabilities Section — Entrance Animations
+- [x] Replace .reveal class on capability cards with staggered IntersectionObserver fade/slide-in
