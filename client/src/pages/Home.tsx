@@ -196,44 +196,43 @@ export default function Home() {
   const [expandedPainPoint, setExpandedPainPoint] = useState<string | null>(null);
   const capabilitiesRef = useRef<HTMLDivElement>(null);
   const [capabilitiesVisible, setCapabilitiesVisible] = useState(false);
+  const painPointsRef = useRef<HTMLDivElement>(null);
+  const [painPointsVisible, setPainPointsVisible] = useState(false);
+  const howItWorksRef = useRef<HTMLDivElement>(null);
+  const [howItWorksVisible, setHowItWorksVisible] = useState(false);
 
-  useEffect(() => {
-    const el = capabilitiesRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting) {
-          setCapabilitiesVisible(false);
-          const t = setTimeout(() => setCapabilitiesVisible(true), 60);
-          return () => clearTimeout(t);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  // Shared helper to wire an IntersectionObserver to a visibility toggle
+  function useSectionReveal(
+    ref: React.RefObject<HTMLDivElement | null>,
+    setVisible: React.Dispatch<React.SetStateAction<boolean>>,
+    threshold = 0.1
+  ) {
+    useEffect(() => {
+      const el = ref.current;
+      if (!el) return;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setVisible(false);
+            const t = setTimeout(() => setVisible(true), 60);
+            return () => clearTimeout(t);
+          }
+        },
+        { threshold }
+      );
+      observer.observe(el);
+      return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+  }
+
   const heroContentRef = useRef<HTMLDivElement>(null);
   const [heroVisible, setHeroVisible] = useState(false);
 
-  useEffect(() => {
-    const el = heroContentRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting) {
-          setHeroVisible(false);
-          const t = setTimeout(() => setHeroVisible(true), 60);
-          return () => clearTimeout(t);
-        }
-      },
-      { threshold: 0.2 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  useSectionReveal(capabilitiesRef, setCapabilitiesVisible);
+  useSectionReveal(painPointsRef, setPainPointsVisible);
+  useSectionReveal(howItWorksRef, setHowItWorksVisible);
+  useSectionReveal(heroContentRef, setHeroVisible, 0.2);
 
   const contactMutation = trpc.contact.submit.useMutation({
     onSuccess: () => {
@@ -654,7 +653,7 @@ export default function Home() {
       {/* ═══════════════════════════════════════════════════════════════
           PAIN POINTS — Clean card grid, no scroll pin
          ═══════════════════════════════════════════════════════════════ */}
-      <section id="solutions" className="py-24 bg-black relative overflow-hidden">
+      <section id="solutions" ref={painPointsRef} className="py-24 bg-black relative overflow-hidden">
         {/* Grid background */}
         <div className="absolute inset-0 opacity-10">
           <div
@@ -668,7 +667,14 @@ export default function Home() {
         </div>
 
         <div className="container relative z-10 px-4">
-          <div className="text-center mb-16 reveal">
+          <div
+            className="text-center mb-16"
+            style={{
+              opacity: painPointsVisible ? 1 : 0,
+              transform: painPointsVisible ? "translateY(0)" : "translateY(20px)",
+              transition: "opacity 0.7s ease, transform 0.7s ease",
+            }}
+          >
             <div className="inline-block px-4 py-1.5 border border-red-500/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-red-400 mb-6">
               Sound Familiar?
             </div>
@@ -681,10 +687,16 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-4 max-w-5xl mx-auto">
-            {painPoints.map((point) => (
+            {painPoints.map((point, i) => (
               <div
                 key={point.id}
-                className="reveal cursor-pointer group"
+                className="cursor-pointer group"
+                style={{
+                  opacity: painPointsVisible ? 1 : 0,
+                  transform: painPointsVisible ? "translateY(0)" : "translateY(20px)",
+                  transition: "opacity 0.6s ease, transform 0.6s ease",
+                  transitionDelay: `${80 + i * 60}ms`,
+                }}
                 onClick={() => setExpandedPainPoint(expandedPainPoint === point.id ? null : point.id)}
               >
                 <div className={`flex items-start gap-4 py-4 px-5 rounded-xl border transition-all duration-300 ${
@@ -720,9 +732,16 @@ export default function Home() {
       {/* ═══════════════════════════════════════════════════════════════
           HOW IT WORKS — Three deployment methods
          ═══════════════════════════════════════════════════════════════ */}
-      <section id="how-it-works" className="py-24 bg-black relative">
+      <section id="how-it-works" ref={howItWorksRef} className="py-24 bg-black relative">
         <div className="container">
-          <div className="text-center mb-16 reveal">
+          <div
+            className="text-center mb-16"
+            style={{
+              opacity: howItWorksVisible ? 1 : 0,
+              transform: howItWorksVisible ? "translateY(0)" : "translateY(20px)",
+              transition: "opacity 0.7s ease, transform 0.7s ease",
+            }}
+          >
             <div className="inline-block px-4 py-1.5 border border-primary/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6">
               Deployment
             </div>
@@ -767,7 +786,16 @@ export default function Home() {
                 ],
               },
             ].map((method, i) => (
-              <div key={i} className="reveal group relative bg-black/60 border border-primary/20 rounded-xl p-8 hover:border-primary/50 transition-all duration-500">
+              <div
+                key={i}
+                className="group relative bg-black/60 border border-primary/20 rounded-xl p-8 hover:border-primary/50 transition-all duration-500"
+                style={{
+                  opacity: howItWorksVisible ? 1 : 0,
+                  transform: howItWorksVisible ? "translateY(0)" : "translateY(24px)",
+                  transition: "opacity 0.6s ease, transform 0.6s ease",
+                  transitionDelay: `${120 + i * 120}ms`,
+                }}
+              >
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className={`w-16 h-16 bg-gradient-to-br ${method.color} rounded-xl flex items-center justify-center mb-6 shadow-lg`}>
                   <i className={`fas ${method.icon} text-2xl text-white`}></i>
