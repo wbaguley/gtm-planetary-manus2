@@ -313,3 +313,8 @@
 - [x] Redesign pain points section without sphere (clean card-based layout)
 - [x] Remove unused ParticleMorph imports and GSAP scroll pin code
 - [x] Test smooth scrolling throughout entire page
+
+## Hero Right-Side Visual Element
+- [x] Build CSS/SVG visual element for hero right column (AI/tech aesthetic)
+- [x] Ensure it looks great on desktop and hides gracefully on mobile
+- [x] No canvas, no WebGL, no heavy dependencies

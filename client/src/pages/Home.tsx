@@ -1,5 +1,112 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+
+// ─── Hero Right-Side: AI Agent Dashboard Panel ────────────────────────────────
+function HeroAgentPanel() {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 2000);
+    return () => clearInterval(id);
+  }, []);
+
+  const agents = [
+    { name: "Voice Agent",      status: "ACTIVE",  task: "Answering inbound call",      pct: 94 },
+    { name: "Dispatch AI",      status: "ACTIVE",  task: "Routing 3 technicians",        pct: 78 },
+    { name: "Bid Automator",    status: "ACTIVE",  task: "Generating quote #1847",       pct: 61 },
+    { name: "Invoice Bot",      status: "IDLE",    task: "Waiting for job completion",   pct: 0  },
+    { name: "Lead Qualifier",   status: "ACTIVE",  task: "Scoring 12 new leads",         pct: 88 },
+  ];
+
+  const metrics = [
+    { label: "Calls Handled",   value: tick % 2 === 0 ? "1,847" : "1,848" },
+    { label: "Jobs Dispatched", value: "342" },
+    { label: "Quotes Sent",     value: tick % 3 === 0 ? "219" : "220" },
+    { label: "Uptime",          value: "99.9%" },
+  ];
+
+  return (
+    <div
+      className="w-[440px] rounded-2xl border border-primary/20 bg-black/70 backdrop-blur-md overflow-hidden scan-lines"
+      style={{ boxShadow: "0 0 60px rgba(168,85,247,0.15), inset 0 0 40px rgba(168,85,247,0.04)" }}
+    >
+      {/* Header bar */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-primary/15 bg-primary/5">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <span className="font-orbitron text-xs text-primary tracking-widest uppercase">GTM Planetary — Live Agents</span>
+        </div>
+        <div className="flex gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+          <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+        </div>
+      </div>
+
+      {/* Metrics row */}
+      <div className="grid grid-cols-4 border-b border-primary/10">
+        {metrics.map((m) => (
+          <div key={m.label} className="px-3 py-3 text-center border-r border-primary/10 last:border-r-0">
+            <div className="font-orbitron text-sm font-bold text-primary">{m.value}</div>
+            <div className="text-[10px] text-gray-500 mt-0.5 uppercase tracking-wide leading-tight">{m.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Agent list */}
+      <div className="divide-y divide-primary/8">
+        {agents.map((agent) => (
+          <div key={agent.name} className="px-5 py-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    agent.status === "ACTIVE" ? "bg-green-400 animate-pulse" : "bg-gray-600"
+                  }`}
+                />
+                <span className="font-orbitron text-xs text-foreground/90">{agent.name}</span>
+              </div>
+              <span
+                className={`text-[10px] font-orbitron px-1.5 py-0.5 rounded border ${
+                  agent.status === "ACTIVE"
+                    ? "text-green-400 border-green-400/30 bg-green-400/10"
+                    : "text-gray-500 border-gray-600/30 bg-gray-800/30"
+                }`}
+              >
+                {agent.status}
+              </span>
+            </div>
+            <div className="text-[11px] text-gray-500 mb-1.5 pl-3.5">{agent.task}</div>
+            {agent.pct > 0 && (
+              <div className="pl-3.5">
+                <div className="h-1 rounded-full bg-primary/10 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-primary to-purple-400"
+                    style={{
+                      width: `${agent.pct}%`,
+                      transition: "width 1.5s ease",
+                      boxShadow: "0 0 6px rgba(168,85,247,0.6)",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div className="px-5 py-2.5 border-t border-primary/10 bg-primary/5 flex items-center justify-between">
+        <span className="text-[10px] text-gray-600 font-orbitron uppercase tracking-widest">System nominal</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
+          <span className="text-[10px] text-primary/60 font-orbitron">4 agents running</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -247,29 +354,9 @@ export default function Home() {
               "radial-gradient(ellipse 80% 60% at 60% 50%, rgba(168,85,247,0.12) 0%, transparent 70%)",
           }}
         />
-        {/* Subtle animated pulse rings */}
-        <div className="absolute right-[10%] top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block">
-          <div className="relative w-[500px] h-[500px]">
-            {[0, 1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="absolute inset-0 rounded-full border border-primary/10"
-                style={{
-                  transform: `scale(${0.3 + i * 0.25})`,
-                  animation: `pulse ${3 + i * 0.8}s ease-in-out infinite`,
-                  animationDelay: `${i * 0.6}s`,
-                  opacity: 0.4 - i * 0.08,
-                }}
-              />
-            ))}
-            {/* Center glow dot */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div
-                className="w-4 h-4 rounded-full bg-primary/60"
-                style={{ boxShadow: "0 0 40px 20px rgba(168,85,247,0.2)" }}
-              />
-            </div>
-          </div>
+        {/* AI Agent Dashboard Visual */}
+        <div className="absolute right-[4%] top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" style={{ zIndex: 2 }}>
+          <HeroAgentPanel />
         </div>
 
         {/* Gradient overlay left */}
