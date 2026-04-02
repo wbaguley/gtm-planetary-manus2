@@ -330,3 +330,6 @@
 
 ## Hero Agent Panel — Progress Bar Load Animation
 - [x] Animate progress bars from 0% to their target width on first render
+
+## Hero Agent Panel — Scroll-Triggered Re-animation
+- [x] Use IntersectionObserver to reset mounted on viewport exit and replay bar fill on re-entry

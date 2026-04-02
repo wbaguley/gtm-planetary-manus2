@@ -9,10 +9,25 @@ function HeroAgentPanel() {
   const [fadingOut, setFadingOut] = useState([false, false, false, false, false]);
   // mounted drives the progress bar entrance animation (0% → target width)
   const [mounted, setMounted] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    // Small delay so the browser has painted at 0% before we animate to target
-    const t = setTimeout(() => setMounted(true), 120);
-    return () => clearTimeout(t);
+    const el = panelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          // Reset to 0% then animate to target after a short paint delay
+          setMounted(false);
+          const t = setTimeout(() => setMounted(true), 80);
+          return () => clearTimeout(t);
+        }
+      },
+      { threshold: 0.3 } // fire when 30% of the panel is visible
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -76,6 +91,7 @@ function HeroAgentPanel() {
 
   return (
     <div
+      ref={panelRef}
       className="w-[440px] rounded-2xl border border-primary/20 bg-black/70 backdrop-blur-md overflow-hidden scan-lines"
       style={{ boxShadow: "0 0 60px rgba(168,85,247,0.15), inset 0 0 40px rgba(168,85,247,0.04)" }}
     >
