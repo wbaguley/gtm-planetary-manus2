@@ -324,3 +324,6 @@
 
 ## Hero Agent Panel — Task Fade Transition
 - [x] Add CSS opacity fade when task text swaps between strings
+
+## Hero Agent Panel — Slide-Up Transition
+- [x] Pair opacity fade with translateY slide-up on task text fade-in

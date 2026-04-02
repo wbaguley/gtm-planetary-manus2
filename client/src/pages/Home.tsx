@@ -122,7 +122,8 @@ function HeroAgentPanel() {
               className="text-[11px] text-gray-500 mb-1.5 pl-3.5"
               style={{
                 opacity: fadingOut[agents.indexOf(agent)] ? 0 : 1,
-                transition: "opacity 300ms ease",
+                transform: fadingOut[agents.indexOf(agent)] ? "translateY(4px)" : "translateY(0)",
+                transition: "opacity 300ms ease, transform 300ms ease",
               }}
             >
               {agent.task}
