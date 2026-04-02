@@ -5,28 +5,36 @@ import { Button } from "@/components/ui/button";
 function HeroAgentPanel() {
   const [tick, setTick] = useState(0);
   const [taskIndices, setTaskIndices] = useState([0, 0, 0, 0, 0]);
+  // fadingOut[i] = true while that agent's task is fading out before the swap
+  const [fadingOut, setFadingOut] = useState([false, false, false, false, false]);
 
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 2000);
     return () => clearInterval(id);
   }, []);
 
+  // Helper: fade out agent i, swap text, fade back in
+  const rotateAgent = (i: number, lists: string[][]) => {
+    setFadingOut((prev) => { const n = [...prev]; n[i] = true; return n; });
+    setTimeout(() => {
+      setTaskIndices((prev) => { const n = [...prev]; n[i] = (n[i] + 1) % lists[i].length; return n; });
+      setFadingOut((prev) => { const n = [...prev]; n[i] = false; return n; });
+    }, 300); // matches the CSS transition duration
+  };
+
   // Rotate one random agent's task every 3 seconds on a staggered basis
   useEffect(() => {
+    const lists = agentTaskLists;
     const rotations = [
-      setTimeout(() => setTaskIndices((prev) => { const n = [...prev]; n[0] = (n[0] + 1) % agentTaskLists[0].length; return n; }), 0),
-      setTimeout(() => setTaskIndices((prev) => { const n = [...prev]; n[1] = (n[1] + 1) % agentTaskLists[1].length; return n; }), 1200),
-      setTimeout(() => setTaskIndices((prev) => { const n = [...prev]; n[2] = (n[2] + 1) % agentTaskLists[2].length; return n; }), 2400),
-      setTimeout(() => setTaskIndices((prev) => { const n = [...prev]; n[3] = (n[3] + 1) % agentTaskLists[3].length; return n; }), 3600),
-      setTimeout(() => setTaskIndices((prev) => { const n = [...prev]; n[4] = (n[4] + 1) % agentTaskLists[4].length; return n; }), 4800),
+      setTimeout(() => rotateAgent(0, lists), 0),
+      setTimeout(() => rotateAgent(1, lists), 1200),
+      setTimeout(() => rotateAgent(2, lists), 2400),
+      setTimeout(() => rotateAgent(3, lists), 3600),
+      setTimeout(() => rotateAgent(4, lists), 4800),
     ];
     const interval = setInterval(() => {
-      setTaskIndices((prev) => {
-        const n = [...prev];
-        const i = Math.floor(Math.random() * 5);
-        n[i] = (n[i] + 1) % agentTaskLists[i].length;
-        return n;
-      });
+      const i = Math.floor(Math.random() * 5);
+      rotateAgent(i, lists);
     }, 3000);
     return () => { rotations.forEach(clearTimeout); clearInterval(interval); };
   }, []);
@@ -110,7 +118,15 @@ function HeroAgentPanel() {
                 {agent.status}
               </span>
             </div>
-            <div className="text-[11px] text-gray-500 mb-1.5 pl-3.5">{agent.task}</div>
+            <div
+              className="text-[11px] text-gray-500 mb-1.5 pl-3.5"
+              style={{
+                opacity: fadingOut[agents.indexOf(agent)] ? 0 : 1,
+                transition: "opacity 300ms ease",
+              }}
+            >
+              {agent.task}
+            </div>
             {agent.pct > 0 && (
               <div className="pl-3.5">
                 <div className="h-1 rounded-full bg-primary/10 overflow-hidden">

@@ -321,3 +321,6 @@
 
 ## Hero Agent Panel — Rotating Tasks
 - [x] Add multiple task strings per agent that cycle on a staggered interval
+
+## Hero Agent Panel — Task Fade Transition
+- [x] Add CSS opacity fade when task text swaps between strings
