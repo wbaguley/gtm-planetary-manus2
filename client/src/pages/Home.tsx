@@ -7,6 +7,13 @@ function HeroAgentPanel() {
   const [taskIndices, setTaskIndices] = useState([0, 0, 0, 0, 0]);
   // fadingOut[i] = true while that agent's task is fading out before the swap
   const [fadingOut, setFadingOut] = useState([false, false, false, false, false]);
+  // mounted drives the progress bar entrance animation (0% → target width)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    // Small delay so the browser has painted at 0% before we animate to target
+    const t = setTimeout(() => setMounted(true), 120);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 2000);
@@ -134,8 +141,8 @@ function HeroAgentPanel() {
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-primary to-purple-400"
                     style={{
-                      width: `${agent.pct}%`,
-                      transition: "width 1.5s ease",
+                      width: mounted ? `${agent.pct}%` : "0%",
+                      transition: `width 1.2s cubic-bezier(0.25, 1, 0.5, 1) ${agents.indexOf(agent) * 120}ms`,
                       boxShadow: "0 0 6px rgba(168,85,247,0.6)",
                     }}
                   />

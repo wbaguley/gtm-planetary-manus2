@@ -327,3 +327,6 @@
 
 ## Hero Agent Panel — Slide-Up Transition
 - [x] Pair opacity fade with translateY slide-up on task text fade-in
+
+## Hero Agent Panel — Progress Bar Load Animation
+- [x] Animate progress bars from 0% to their target width on first render
