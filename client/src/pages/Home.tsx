@@ -4,17 +4,52 @@ import { Button } from "@/components/ui/button";
 // ─── Hero Right-Side: AI Agent Dashboard Panel ────────────────────────────────
 function HeroAgentPanel() {
   const [tick, setTick] = useState(0);
+  const [taskIndices, setTaskIndices] = useState([0, 0, 0, 0, 0]);
+
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 2000);
     return () => clearInterval(id);
   }, []);
 
+  // Rotate one random agent's task every 3 seconds on a staggered basis
+  useEffect(() => {
+    const rotations = [
+      setTimeout(() => setTaskIndices((prev) => { const n = [...prev]; n[0] = (n[0] + 1) % agentTaskLists[0].length; return n; }), 0),
+      setTimeout(() => setTaskIndices((prev) => { const n = [...prev]; n[1] = (n[1] + 1) % agentTaskLists[1].length; return n; }), 1200),
+      setTimeout(() => setTaskIndices((prev) => { const n = [...prev]; n[2] = (n[2] + 1) % agentTaskLists[2].length; return n; }), 2400),
+      setTimeout(() => setTaskIndices((prev) => { const n = [...prev]; n[3] = (n[3] + 1) % agentTaskLists[3].length; return n; }), 3600),
+      setTimeout(() => setTaskIndices((prev) => { const n = [...prev]; n[4] = (n[4] + 1) % agentTaskLists[4].length; return n; }), 4800),
+    ];
+    const interval = setInterval(() => {
+      setTaskIndices((prev) => {
+        const n = [...prev];
+        const i = Math.floor(Math.random() * 5);
+        n[i] = (n[i] + 1) % agentTaskLists[i].length;
+        return n;
+      });
+    }, 3000);
+    return () => { rotations.forEach(clearTimeout); clearInterval(interval); };
+  }, []);
+
+  const agentTaskLists = [
+    // Voice Agent
+    ["Answering inbound call", "Qualifying new lead — HVAC install", "Booking appointment #2041", "Leaving voicemail for missed call", "Transferring to technician"],
+    // Dispatch AI
+    ["Routing 3 technicians", "Optimizing morning routes", "Reassigning job #847 — tech ran late", "Dispatching nearest crew to Caldwell", "Updating ETAs for 5 open jobs"],
+    // Bid Automator
+    ["Generating quote #1847", "Pulling material costs for bid", "Emailing estimate to Johnson HVAC", "Recalculating labor hours", "Submitting bid #1848 — $14,200"],
+    // Invoice Bot
+    ["Waiting for job completion", "Sending invoice #3312 to client", "Following up on overdue payment", "Reconciling QuickBooks entries", "Generating weekly revenue report"],
+    // Lead Qualifier
+    ["Scoring 12 new leads", "Flagging high-value prospect in CRM", "Sending follow-up to cold lead", "Enriching contact — Boise Plumbing Co.", "Routing hot lead to sales queue"],
+  ];
+
   const agents = [
-    { name: "Voice Agent",      status: "ACTIVE",  task: "Answering inbound call",      pct: 94 },
-    { name: "Dispatch AI",      status: "ACTIVE",  task: "Routing 3 technicians",        pct: 78 },
-    { name: "Bid Automator",    status: "ACTIVE",  task: "Generating quote #1847",       pct: 61 },
-    { name: "Invoice Bot",      status: "IDLE",    task: "Waiting for job completion",   pct: 0  },
-    { name: "Lead Qualifier",   status: "ACTIVE",  task: "Scoring 12 new leads",         pct: 88 },
+    { name: "Voice Agent",    status: "ACTIVE", task: agentTaskLists[0][taskIndices[0]], pct: 94 },
+    { name: "Dispatch AI",    status: "ACTIVE", task: agentTaskLists[1][taskIndices[1]], pct: 78 },
+    { name: "Bid Automator",  status: "ACTIVE", task: agentTaskLists[2][taskIndices[2]], pct: 61 },
+    { name: "Invoice Bot",    status: "IDLE",   task: agentTaskLists[3][taskIndices[3]], pct: 0  },
+    { name: "Lead Qualifier", status: "ACTIVE", task: agentTaskLists[4][taskIndices[4]], pct: 88 },
   ];
 
   const metrics = [

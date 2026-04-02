@@ -318,3 +318,6 @@
 - [x] Build CSS/SVG visual element for hero right column (AI/tech aesthetic)
 - [x] Ensure it looks great on desktop and hides gracefully on mobile
 - [x] No canvas, no WebGL, no heavy dependencies
+
+## Hero Agent Panel — Rotating Tasks
+- [x] Add multiple task strings per agent that cycle on a staggered interval
