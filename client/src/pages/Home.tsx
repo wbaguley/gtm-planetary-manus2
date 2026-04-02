@@ -6,21 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
-import ParticleMorph from "@/components/ParticleMorph";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedPainPoint, setExpandedPainPoint] = useState<string | null>(null);
-  const [heroProgress, setHeroProgress] = useState(0);
-  const [painProgress, setPainProgress] = useState(0);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const painRef = useRef<HTMLDivElement>(null);
   const capabilitiesRef = useRef<HTMLDivElement>(null);
 
   const contactMutation = trpc.contact.submit.useMutation({
@@ -165,65 +156,7 @@ export default function Home() {
     contactMutation.mutate(formData);
   };
 
-  // GSAP ScrollTrigger for pinned sections
-  useEffect(() => {
-    // Hero section pin - morphing object stays while you scroll
-    if (heroRef.current) {
-      ScrollTrigger.create({
-        trigger: heroRef.current,
-        start: "top top",
-        end: "+=150%",
-        pin: true,
-        scrub: 1,
-        onUpdate: (self) => {
-          setHeroProgress(self.progress);
-        },
-      });
-    }
-
-    // Pain points section pin - longer duration to reveal all 8 pain points
-    if (painRef.current) {
-      ScrollTrigger.create({
-        trigger: painRef.current,
-        start: "top top",
-        end: "+=400%",
-        pin: true,
-        scrub: 0.8,
-        onUpdate: (self) => {
-          setPainProgress(self.progress);
-        },
-      });
-    }
-
-    // Capabilities section reveal animations
-    if (capabilitiesRef.current) {
-      const cards = capabilitiesRef.current.querySelectorAll(".cap-card");
-      cards.forEach((card, i) => {
-        gsap.fromTo(
-          card,
-          { opacity: 0, y: 60, scale: 0.9 },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.8,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: card,
-              start: "top 85%",
-              toggleActions: "play none none reverse",
-            },
-          }
-        );
-      });
-    }
-
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
-  // Scroll reveal animation for non-pinned sections
+  // Scroll reveal animation
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -236,11 +169,6 @@ export default function Home() {
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, []);
-
-  // Determine which pain points to show based on scroll progress
-  // First 10% shows the heading, then each pain point gets ~11% of the remaining scroll
-  const adjustedProgress = Math.max(0, (painProgress - 0.05) / 0.9);
-  const visiblePainPoints = Math.min(painPoints.length, Math.floor(adjustedProgress * (painPoints.length + 1)) + 1);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -304,85 +232,103 @@ export default function Home() {
       </nav>
 
       {/* ═══════════════════════════════════════════════════════════════
-          HERO SECTION — Pinned, text left, 3D morphing object right
+          HERO SECTION — Full viewport, centered, no sphere
          ═══════════════════════════════════════════════════════════════ */}
       <section
-        ref={heroRef}
         id="home"
-        className="relative h-screen flex items-center overflow-hidden"
+        className="relative min-h-screen flex items-center overflow-hidden"
       >
-        {/* Parallax Background */}
-        <div className="absolute inset-0 grid-bg" style={{ transform: `translateY(${heroProgress * 100}px)` }} />
-        <div className="absolute inset-0" style={{ transform: `translateY(${heroProgress * 60}px)` }} />
-
-        {/* Subtle gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/40 to-transparent z-[1]" />
-
-        {/* Hero Content */}
-        <div className="container relative z-10 px-4">
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
-            {/* Left: Text Content — fades/moves based on scroll progress */}
-            <div
-              className="space-y-8"
-              style={{
-                opacity: Math.max(0, 1 - heroProgress * 0.8),
-                transform: `translateY(${heroProgress * -30}px)`,
-              }}
-            >
-              <div className="inline-block px-4 py-1.5 border border-primary/40 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-4">
-                AI Workforce for Trades
-              </div>
-              <h1 className="font-orbitron text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight">
-                STOP HIRING.
-                <br />
-                <span className="glitch neon-glow inline-block" data-text="START DEPLOYING.">
-                  START DEPLOYING.
-                </span>
-              </h1>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-                Custom AI models and autonomous agents that handle operations, bidding, scheduling, and customer service—so you can focus on the work that matters.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  size="lg"
-                  className="font-orbitron uppercase tracking-wider bg-primary hover:bg-primary/90 pulse-border"
-                  onClick={() => scrollToSection("contact")}
-                >
-                  Build Your AI Workforce
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="font-orbitron uppercase tracking-wider"
-                  onClick={() => scrollToSection("solutions")}
-                >
-                  See What We Solve
-                </Button>
-              </div>
-            </div>
-
-            {/* Right: Real-time particle morphing */}
-            <div
-              className="h-[500px] lg:h-[600px] relative flex items-center justify-center"
-              style={{
-                transform: `scale(${1 + heroProgress * 0.15}) translateY(${heroProgress * -10}px)`,
-              }}
-            >
-              <ParticleMorph
-                scrollProgress={heroProgress}
-                variant="hero"
-                className="w-full h-full"
+        {/* Animated radial glow background */}
+        <div className="absolute inset-0 grid-bg" />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 60% at 60% 50%, rgba(168,85,247,0.12) 0%, transparent 70%)",
+          }}
+        />
+        {/* Subtle animated pulse rings */}
+        <div className="absolute right-[10%] top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block">
+          <div className="relative w-[500px] h-[500px]">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="absolute inset-0 rounded-full border border-primary/10"
+                style={{
+                  transform: `scale(${0.3 + i * 0.25})`,
+                  animation: `pulse ${3 + i * 0.8}s ease-in-out infinite`,
+                  animationDelay: `${i * 0.6}s`,
+                  opacity: 0.4 - i * 0.08,
+                }}
+              />
+            ))}
+            {/* Center glow dot */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                className="w-4 h-4 rounded-full bg-primary/60"
+                style={{ boxShadow: "0 0 40px 20px rgba(168,85,247,0.2)" }}
               />
             </div>
           </div>
         </div>
 
+        {/* Gradient overlay left */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent z-[1]" />
+
+        {/* Hero Content */}
+        <div className="container relative z-10 px-4 pt-24 pb-16">
+          <div className="max-w-3xl">
+            <div className="inline-block px-4 py-1.5 border border-primary/40 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6">
+              AI Workforce for Trades
+            </div>
+            <h1 className="font-orbitron text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight mb-6">
+              STOP HIRING.
+              <br />
+              <span className="glitch neon-glow inline-block" data-text="START DEPLOYING.">
+                START DEPLOYING.
+              </span>
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">
+              Custom AI models and autonomous agents that handle operations, bidding, scheduling, and customer service—so you can focus on the work that matters.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button
+                size="lg"
+                className="font-orbitron uppercase tracking-wider bg-primary hover:bg-primary/90 pulse-border"
+                onClick={() => scrollToSection("contact")}
+              >
+                Build Your AI Workforce
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="font-orbitron uppercase tracking-wider"
+                onClick={() => scrollToSection("solutions")}
+              >
+                See What We Solve
+              </Button>
+            </div>
+
+            {/* Stats row */}
+            <div className="mt-16 flex flex-wrap gap-8">
+              {[
+                { value: "24/7", label: "Always On" },
+                { value: "0", label: "Missed Calls" },
+                { value: "30%", label: "Less Drive Time" },
+                { value: "Days", label: "Not Months to Deploy" },
+              ].map((stat) => (
+                <div key={stat.label} className="text-left">
+                  <div className="font-orbitron text-3xl font-bold text-primary neon-glow">{stat.value}</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wider mt-1">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Scroll indicator */}
-        <div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center z-10"
-          style={{ opacity: Math.max(0, 1 - heroProgress * 2) }}
-        >
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center z-10">
           <span className="block text-sm mb-2 text-muted-foreground">Scroll to explore</span>
           <div className="w-6 h-10 border-2 border-primary/50 rounded-full mx-auto flex justify-center">
             <div className="w-1.5 h-3 bg-primary rounded-full mt-2 animate-bounce" />
@@ -407,7 +353,7 @@ export default function Home() {
         </div>
 
         <div className="container relative z-10">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 reveal">
             <div className="inline-block px-4 py-1.5 border border-primary/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6">
               What We Deploy
             </div>
@@ -420,10 +366,10 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {aiCapabilities.map((cap, i) => (
+            {aiCapabilities.map((cap) => (
               <div
                 key={cap.id}
-                className={`cap-card group relative bg-black/80 backdrop-blur-sm border ${cap.borderColor} rounded-xl p-6 hover:border-primary/60 transition-all duration-500 cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10`}
+                className={`reveal cap-card group relative bg-black/80 backdrop-blur-sm border ${cap.borderColor} rounded-xl p-6 hover:border-primary/60 transition-all duration-500 cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10`}
               >
                 {/* Gradient accent top */}
                 <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${cap.color} rounded-t-xl opacity-60 group-hover:opacity-100 transition-opacity`} />
@@ -443,97 +389,67 @@ export default function Home() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════
-          PAIN POINTS — Pinned section, scifi retro reveal
+          PAIN POINTS — Clean card grid, no scroll pin
          ═══════════════════════════════════════════════════════════════ */}
-      <section
-        ref={painRef}
-        id="solutions"
-        className="relative h-screen flex items-center overflow-hidden bg-black"
-      >
-        {/* Animated scan line */}
-        <div
-          className="absolute inset-0 pointer-events-none z-20"
-          style={{
-            background: `linear-gradient(transparent ${painProgress * 100}%, rgba(168,85,247,0.05) ${painProgress * 100 + 0.5}%, transparent ${painProgress * 100 + 1}%)`,
-          }}
-        />
-
+      <section id="solutions" className="py-24 bg-black relative overflow-hidden">
         {/* Grid background */}
-        <div className="absolute inset-0 opacity-15">
+        <div className="absolute inset-0 opacity-10">
           <div
             className="absolute inset-0"
             style={{
               backgroundImage:
                 "linear-gradient(rgba(168,85,247,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(168,85,247,0.08) 1px, transparent 1px)",
               backgroundSize: "60px 60px",
-              transform: `translateY(${painProgress * 30}px)`,
             }}
           />
         </div>
 
         <div className="container relative z-10 px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
-            {/* Left: Pain points list — revealed one by one */}
-            <div className="space-y-2 max-h-[80vh] overflow-hidden">
-              <div className="mb-8">
-                <div className="inline-block px-4 py-1.5 border border-red-500/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-red-400 mb-4">
-                  Sound Familiar?
-                </div>
-                <h2 className="font-orbitron text-3xl md:text-4xl font-bold">
-                  WHAT'S <span className="text-red-400">HOLDING YOU BACK?</span>
-                </h2>
-              </div>
+          <div className="text-center mb-16 reveal">
+            <div className="inline-block px-4 py-1.5 border border-red-500/30 rounded-full text-xs font-orbitron uppercase tracking-widest text-red-400 mb-6">
+              Sound Familiar?
+            </div>
+            <h2 className="font-orbitron text-4xl md:text-5xl font-bold mb-4">
+              WHAT'S <span className="text-red-400">HOLDING YOU BACK?</span>
+            </h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              Every one of these is solved by deploying the right AI agent.
+            </p>
+          </div>
 
-              {painPoints.map((point, index) => {
-                const isVisible = index < visiblePainPoints;
-                const isActive = index === visiblePainPoints - 1;
-                return (
-                <div
-                  key={point.id}
-                  className="cursor-pointer transition-all duration-700 ease-out"
-                  style={{
-                    opacity: isVisible ? 1 : 0,
-                    transform: `translateX(${isVisible ? 0 : -40}px) scale(${isActive ? 1.02 : 1})`,
-                    maxHeight: isVisible ? "200px" : "0px",
-                    overflow: "hidden",
-                    transitionDelay: isVisible ? `${index * 50}ms` : "0ms",
-                  }}
-                  onClick={() => setExpandedPainPoint(expandedPainPoint === point.id ? null : point.id)}
-                >
-                  <div className={`flex items-start gap-3 py-3 px-4 rounded-lg hover:bg-white/5 transition-all duration-500 group ${isActive ? 'bg-white/5 border-l-2 border-primary' : 'border-l-2 border-transparent'}`}>
-                    <div className="w-8 h-8 bg-red-500/10 border border-red-500/20 rounded flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-red-500/20 transition-colors">
-                      <i className={`fas ${point.icon} text-sm text-red-400`}></i>
+          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-4 max-w-5xl mx-auto">
+            {painPoints.map((point) => (
+              <div
+                key={point.id}
+                className="reveal cursor-pointer group"
+                onClick={() => setExpandedPainPoint(expandedPainPoint === point.id ? null : point.id)}
+              >
+                <div className={`flex items-start gap-4 py-4 px-5 rounded-xl border transition-all duration-300 ${
+                  expandedPainPoint === point.id
+                    ? "bg-primary/5 border-primary/40"
+                    : "bg-white/[0.02] border-white/5 hover:border-primary/20 hover:bg-white/[0.04]"
+                }`}>
+                  <div className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-red-500/20 transition-colors">
+                    <i className={`fas ${point.icon} text-sm text-red-400`}></i>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <h3 className="font-orbitron text-sm font-bold text-white">{point.title}</h3>
+                      <i className={`fas fa-chevron-${expandedPainPoint === point.id ? "up" : "down"} text-xs text-gray-600 flex-shrink-0`}></i>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] text-red-400/60">&gt;_</span>
-                        <h3 className="font-orbitron text-sm font-bold text-white">{point.title}</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">{point.problem}</p>
+                    {expandedPainPoint === point.id && (
+                      <div className="mt-3 pt-3 border-t border-green-500/20">
+                        <p className="text-xs text-green-400/80 leading-relaxed">
+                          <span className="font-mono text-[10px] text-green-500 mr-1">RESOLVE:</span>
+                          {point.solution}
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1 leading-relaxed">{point.problem}</p>
-                      {expandedPainPoint === point.id && (
-                        <div className="mt-2 pt-2 border-t border-green-500/20">
-                          <p className="text-xs text-green-400/80 leading-relaxed">
-                            <span className="font-mono text-[10px] text-green-500 mr-1">RESOLVE:</span>
-                            {point.solution}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    <i className={`fas fa-chevron-${expandedPainPoint === point.id ? "up" : "down"} text-xs text-gray-600 mt-1`}></i>
+                    )}
                   </div>
                 </div>
-                );
-              })}
-            </div>
-
-            {/* Right: Real-time particle morphing for pain points */}
-            <div className="h-[500px] lg:h-[600px] relative flex items-center justify-center">
-              <ParticleMorph
-                scrollProgress={0}
-                variant="hero"
-                className="w-full h-full"
-              />
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

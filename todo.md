@@ -304,3 +304,12 @@
 ## Reduce Hero Section Scroll Length
 - [x] Reduce hero ScrollTrigger pin length (currently 400%)
 - [x] Test scroll pacing feels natural
+
+## Remove Sphere & Fix Scroll Glitches
+- [x] Remove ParticleMorph component from hero section
+- [x] Remove ParticleMorph component from pain points section
+- [x] Remove all GSAP ScrollTrigger pinning (source of scroll glitches)
+- [x] Redesign hero section layout without sphere (full-width text/CTA focus)
+- [x] Redesign pain points section without sphere (clean card-based layout)
+- [x] Remove unused ParticleMorph imports and GSAP scroll pin code
+- [x] Test smooth scrolling throughout entire page
