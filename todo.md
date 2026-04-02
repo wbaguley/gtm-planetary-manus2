@@ -333,3 +333,6 @@
 
 ## Hero Agent Panel — Scroll-Triggered Re-animation
 - [x] Use IntersectionObserver to reset mounted on viewport exit and replay bar fill on re-entry
+
+## Hero Text Entrance Animations
+- [x] Add staggered fade/slide-in entrance for headline, subtext, CTAs, and stats on viewport entry

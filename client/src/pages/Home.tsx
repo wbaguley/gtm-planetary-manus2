@@ -195,6 +195,26 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedPainPoint, setExpandedPainPoint] = useState<string | null>(null);
   const capabilitiesRef = useRef<HTMLDivElement>(null);
+  const heroContentRef = useRef<HTMLDivElement>(null);
+  const [heroVisible, setHeroVisible] = useState(false);
+
+  useEffect(() => {
+    const el = heroContentRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          setHeroVisible(false);
+          const t = setTimeout(() => setHeroVisible(true), 60);
+          return () => clearTimeout(t);
+        }
+      },
+      { threshold: 0.2 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const contactMutation = trpc.contact.submit.useMutation({
     onSuccess: () => {
@@ -439,22 +459,61 @@ export default function Home() {
 
         {/* Hero Content */}
         <div className="container relative z-10 px-4 pt-24 pb-16">
-          <div className="max-w-3xl">
-            <div className="inline-block px-4 py-1.5 border border-primary/40 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6">
+          <div className="max-w-3xl" ref={heroContentRef}>
+
+            {/* Badge */}
+            <div
+              className="inline-block px-4 py-1.5 border border-primary/40 rounded-full text-xs font-orbitron uppercase tracking-widest text-primary mb-6"
+              style={{
+                opacity: heroVisible ? 1 : 0,
+                transform: heroVisible ? "translateY(0)" : "translateY(16px)",
+                transition: "opacity 0.6s ease, transform 0.6s ease",
+                transitionDelay: "0ms",
+              }}
+            >
               AI Workforce for Trades
             </div>
-            <h1 className="font-orbitron text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight mb-6">
+
+            {/* Headline */}
+            <h1
+              className="font-orbitron text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight mb-6"
+              style={{
+                opacity: heroVisible ? 1 : 0,
+                transform: heroVisible ? "translateY(0)" : "translateY(20px)",
+                transition: "opacity 0.7s ease, transform 0.7s ease",
+                transitionDelay: "120ms",
+              }}
+            >
               STOP HIRING.
               <br />
               <span className="glitch neon-glow inline-block" data-text="START DEPLOYING.">
                 START DEPLOYING.
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">
+
+            {/* Subtext */}
+            <p
+              className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10"
+              style={{
+                opacity: heroVisible ? 1 : 0,
+                transform: heroVisible ? "translateY(0)" : "translateY(16px)",
+                transition: "opacity 0.6s ease, transform 0.6s ease",
+                transitionDelay: "260ms",
+              }}
+            >
               Custom AI models and autonomous agents that handle operations, bidding, scheduling, and customer service—so you can focus on the work that matters.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            {/* CTAs */}
+            <div
+              className="flex flex-col sm:flex-row gap-4"
+              style={{
+                opacity: heroVisible ? 1 : 0,
+                transform: heroVisible ? "translateY(0)" : "translateY(14px)",
+                transition: "opacity 0.6s ease, transform 0.6s ease",
+                transitionDelay: "400ms",
+              }}
+            >
               <Button
                 size="lg"
                 className="font-orbitron uppercase tracking-wider bg-primary hover:bg-primary/90 pulse-border"
@@ -479,8 +538,17 @@ export default function Home() {
                 { value: "0", label: "Missed Calls" },
                 { value: "30%", label: "Less Drive Time" },
                 { value: "Days", label: "Not Months to Deploy" },
-              ].map((stat) => (
-                <div key={stat.label} className="text-left">
+              ].map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className="text-left"
+                  style={{
+                    opacity: heroVisible ? 1 : 0,
+                    transform: heroVisible ? "translateY(0)" : "translateY(12px)",
+                    transition: "opacity 0.5s ease, transform 0.5s ease",
+                    transitionDelay: `${540 + i * 80}ms`,
+                  }}
+                >
                   <div className="font-orbitron text-3xl font-bold text-primary neon-glow">{stat.value}</div>
                   <div className="text-xs text-gray-500 uppercase tracking-wider mt-1">{stat.label}</div>
                 </div>
