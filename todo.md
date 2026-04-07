@@ -347,3 +347,10 @@
 ## About & Contact — Entrance Animations
 - [x] Replace .reveal class on About section with staggered IntersectionObserver
 - [x] Replace .reveal class on Contact section with staggered IntersectionObserver
+
+## Spam Protection & Hero Panel Resize
+- [x] Add honeypot hidden field to contact form (frontend)
+- [x] Add server-side honeypot rejection in contact.submit tRPC procedure
+- [x] Update contact form test to cover honeypot rejection
+- [x] Resize HeroAgentPanel to match STOP HIRING headline height
+- [x] Shift HeroAgentPanel left so it sits closer to center of the hero

@@ -27,15 +27,23 @@ export const appRouter = router({
         phone: z.string().optional(),
         company: z.string().optional(),
         message: z.string().min(1, "Message is required"),
+        // Honeypot: must be empty — bots fill it, humans never see it
+        _hp: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
+        // Silently reject if honeypot field was filled (bot detected)
+        if (input._hp && input._hp.length > 0) {
+          return { success: true }; // Lie to the bot — don't reveal detection
+        }
+
         const { createContactSubmission } = await import("./db");
-        await createContactSubmission(input);
+        const { _hp: _ignored, ...submission } = input;
+        await createContactSubmission(submission);
         
         // Send notification to owner
         await notifyOwner({
           title: "New Contact Form Submission",
-          content: `Name: ${input.name}\nEmail: ${input.email}\nPhone: ${input.phone || 'Not provided'}\nCompany: ${input.company || 'Not provided'}\nMessage: ${input.message}`,
+          content: `Name: ${submission.name}\nEmail: ${submission.email}\nPhone: ${submission.phone || 'Not provided'}\nCompany: ${submission.company || 'Not provided'}\nMessage: ${submission.message}`,
         });
         
         return { success: true };

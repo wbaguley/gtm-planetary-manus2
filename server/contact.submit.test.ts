@@ -82,4 +82,20 @@ describe("contact.submit", () => {
       })
     ).rejects.toThrow();
   });
+
+  it("silently rejects bot submissions when honeypot field is filled", async () => {
+    const ctx = createTestContext();
+    const caller = appRouter.createCaller(ctx);
+
+    // Bot fills the hidden _hp field — server returns success but does NOT save or notify
+    const result = await caller.contact.submit({
+      name: "Bot Name",
+      email: "bot@spam.com",
+      message: "Buy cheap pills",
+      _hp: "bot-filled-this",
+    });
+
+    // Returns success to fool the bot, but no DB write or notification happens
+    expect(result).toEqual({ success: true });
+  });
 });

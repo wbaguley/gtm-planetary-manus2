@@ -92,8 +92,8 @@ function HeroAgentPanel() {
   return (
     <div
       ref={panelRef}
-      className="w-[440px] rounded-2xl border border-primary/20 bg-black/70 backdrop-blur-md overflow-hidden scan-lines"
-      style={{ boxShadow: "0 0 60px rgba(168,85,247,0.15), inset 0 0 40px rgba(168,85,247,0.04)" }}
+      className="w-full rounded-2xl border border-primary/20 bg-black/70 backdrop-blur-md overflow-hidden scan-lines"
+      style={{ boxShadow: "0 0 80px rgba(168,85,247,0.2), inset 0 0 50px rgba(168,85,247,0.05)" }}
     >
       {/* Header bar */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-primary/15 bg-primary/5">
@@ -111,9 +111,9 @@ function HeroAgentPanel() {
       {/* Metrics row */}
       <div className="grid grid-cols-4 border-b border-primary/10">
         {metrics.map((m) => (
-          <div key={m.label} className="px-3 py-3 text-center border-r border-primary/10 last:border-r-0">
-            <div className="font-orbitron text-sm font-bold text-primary">{m.value}</div>
-            <div className="text-[10px] text-gray-500 mt-0.5 uppercase tracking-wide leading-tight">{m.label}</div>
+          <div key={m.label} className="px-3 py-4 text-center border-r border-primary/10 last:border-r-0">
+            <div className="font-orbitron text-base font-bold text-primary">{m.value}</div>
+            <div className="text-[11px] text-gray-500 mt-1 uppercase tracking-wide leading-tight">{m.label}</div>
           </div>
         ))}
       </div>
@@ -121,7 +121,7 @@ function HeroAgentPanel() {
       {/* Agent list */}
       <div className="divide-y divide-primary/8">
         {agents.map((agent) => (
-          <div key={agent.name} className="px-5 py-3">
+          <div key={agent.name} className="px-5 py-4">
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">
                 <div
@@ -129,7 +129,7 @@ function HeroAgentPanel() {
                     agent.status === "ACTIVE" ? "bg-green-400 animate-pulse" : "bg-gray-600"
                   }`}
                 />
-                <span className="font-orbitron text-xs text-foreground/90">{agent.name}</span>
+                <span className="font-orbitron text-sm text-foreground/90">{agent.name}</span>
               </div>
               <span
                 className={`text-[10px] font-orbitron px-1.5 py-0.5 rounded border ${
@@ -142,7 +142,7 @@ function HeroAgentPanel() {
               </span>
             </div>
             <div
-              className="text-[11px] text-gray-500 mb-1.5 pl-3.5"
+              className="text-xs text-gray-500 mb-2 pl-3.5"
               style={{
                 opacity: fadingOut[agents.indexOf(agent)] ? 0 : 1,
                 transform: fadingOut[agents.indexOf(agent)] ? "translateY(4px)" : "translateY(0)",
@@ -243,7 +243,7 @@ export default function Home() {
   const contactMutation = trpc.contact.submit.useMutation({
     onSuccess: () => {
       toast.success("Message sent successfully! We'll get back to you soon.");
-      setFormData({ name: "", email: "", phone: "", company: "", message: "" });
+      setFormData({ name: "", email: "", phone: "", company: "", message: "", _hp: "" });
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to send message. Please try again.");
@@ -251,7 +251,7 @@ export default function Home() {
   });
 
   const [formData, setFormData] = useState({
-    name: "", email: "", phone: "", company: "", message: "",
+    name: "", email: "", phone: "", company: "", message: "", _hp: "",
   });
 
   // AI Capabilities for floating cards
@@ -474,7 +474,7 @@ export default function Home() {
           }}
         />
         {/* AI Agent Dashboard Visual */}
-        <div className="absolute right-[4%] top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" style={{ zIndex: 2 }}>
+        <div className="absolute right-[2%] xl:right-[6%] top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" style={{ zIndex: 2, width: "42%", maxWidth: "560px" }}>
           <HeroAgentPanel />
         </div>
 
@@ -947,6 +947,19 @@ export default function Home() {
             >
               <h3 className="font-orbitron text-2xl font-bold mb-6 text-white">Send A Message</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Honeypot: hidden from humans, bots fill it automatically */}
+                <div style={{ position: "absolute", left: "-9999px", top: "-9999px", opacity: 0, pointerEvents: "none" }} aria-hidden="true">
+                  <label htmlFor="_hp">Leave this empty</label>
+                  <input
+                    id="_hp"
+                    name="_hp"
+                    type="text"
+                    autoComplete="off"
+                    tabIndex={-1}
+                    value={formData._hp}
+                    onChange={(e) => setFormData({ ...formData, _hp: e.target.value })}
+                  />
+                </div>
                 {[
                   { id: "name", label: "Name", type: "text", required: true },
                   { id: "email", label: "Email", type: "email", required: true },
