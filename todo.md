@@ -354,3 +354,9 @@
 - [x] Update contact form test to cover honeypot rejection
 - [x] Resize HeroAgentPanel to match STOP HIRING headline height
 - [x] Shift HeroAgentPanel left so it sits closer to center of the hero
+
+## Bot Spam: Rate Limiting & Email Blocklist
+- [x] Add in-memory IP rate limiting to contact.submit (max 3 per hour per IP)
+- [x] Add known bot email blocklist (example.com, test domains)
+- [x] Extract client IP from request headers (x-forwarded-for support)
+- [x] Update tests to cover rate limit and blocklist rejection

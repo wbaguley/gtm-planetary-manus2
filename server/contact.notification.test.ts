@@ -42,7 +42,7 @@ describe("Contact Form Notification", () => {
   it("should send notification to owner when contact form is submitted", async () => {
     const contactData = {
       name: "John Doe",
-      email: "john@example.com",
+      email: "john@acmecorp.com",
       phone: "555-1234",
       company: "Test Company",
       message: "This is a test message",
@@ -53,8 +53,9 @@ describe("Contact Form Notification", () => {
     // Verify the submission was successful
     expect(result.success).toBe(true);
 
-    // Verify database function was called
-    expect(mockCreateContactSubmission).toHaveBeenCalledWith(contactData);
+    // Verify database function was called (strip _hp from comparison)
+    const { _hp: _ignored, ...submissionData } = { ...contactData, _hp: undefined };
+    expect(mockCreateContactSubmission).toHaveBeenCalledWith(submissionData);
 
     // Verify notification was sent
     expect(mockNotifyOwner).toHaveBeenCalledWith({
@@ -65,7 +66,7 @@ describe("Contact Form Notification", () => {
     // Verify notification content includes all fields
     const notificationCall = mockNotifyOwner.mock.calls[0][0];
     expect(notificationCall.content).toContain("Name: John Doe");
-    expect(notificationCall.content).toContain("Email: john@example.com");
+    expect(notificationCall.content).toContain("Email: john@acmecorp.com");
     expect(notificationCall.content).toContain("Phone: 555-1234");
     expect(notificationCall.content).toContain("Company: Test Company");
     expect(notificationCall.content).toContain("Message: This is a test message");
@@ -74,7 +75,7 @@ describe("Contact Form Notification", () => {
   it("should handle optional fields correctly in notification", async () => {
     const contactData = {
       name: "Jane Smith",
-      email: "jane@example.com",
+      email: "jane@acmecorp.com",
       message: "Message without phone or company",
     };
 
@@ -95,7 +96,7 @@ describe("Contact Form Notification", () => {
 
     const contactData = {
       name: "Test User",
-      email: "test@example.com",
+      email: "test@acmecorp.com",
       message: "Test message",
     };
 

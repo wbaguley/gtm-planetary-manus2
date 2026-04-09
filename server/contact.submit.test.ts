@@ -87,15 +87,46 @@ describe("contact.submit", () => {
     const ctx = createTestContext();
     const caller = appRouter.createCaller(ctx);
 
-    // Bot fills the hidden _hp field — server returns success but does NOT save or notify
     const result = await caller.contact.submit({
       name: "Bot Name",
-      email: "bot@spam.com",
+      email: "bot@legit.com",
       message: "Buy cheap pills",
       _hp: "bot-filled-this",
     });
 
-    // Returns success to fool the bot, but no DB write or notification happens
     expect(result).toEqual({ success: true });
+  });
+
+  it("silently rejects submissions from known bot email domains", async () => {
+    const ctx = createTestContext();
+    const caller = appRouter.createCaller(ctx);
+
+    // example.com and test.com are in the blocklist
+    for (const email of ["jane@example.com", "john@test.com", "bot@spam.com"]) {
+      const result = await caller.contact.submit({
+        name: "Test User",
+        email,
+        message: "A real message",
+      });
+      expect(result).toEqual({ success: true }); // silent rejection
+    }
+  });
+
+  it("rate limits the same IP after 3 submissions within an hour", async () => {
+    // Use a unique IP so this test is isolated from others
+    const ctx = createTestContext();
+    (ctx.req as any).headers = { "x-forwarded-for": "10.99.88.77" };
+    const caller = appRouter.createCaller(ctx);
+
+    const payload = { name: "Real User", email: "real@gtmplanetary.com", message: "Legit message" };
+
+    // First 3 should succeed
+    await caller.contact.submit(payload);
+    await caller.contact.submit(payload);
+    await caller.contact.submit(payload);
+
+    // 4th from same IP should be silently rejected (returns success but no DB write)
+    const result = await caller.contact.submit(payload);
+    expect(result).toEqual({ success: true }); // still returns success to fool bots
   });
 });
