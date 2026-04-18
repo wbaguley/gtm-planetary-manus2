@@ -458,8 +458,7 @@ export default function Home() {
       </nav>
 
       {/* ═══════════════════════════════════════════════════════════════
-          HERO SECTION — Full viewport, centered, no sphere
-         ═══════════════════════════════════════════════════════════════ */}
+         // HERO SECTION — Full viewport, centered, no sphere, v2        ═══════════════════════════════════════════════════════════════ */}
       <section
         id="home"
         className="relative min-h-screen flex items-center overflow-hidden"

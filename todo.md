@@ -360,3 +360,8 @@
 - [x] Add known bot email blocklist (example.com, test domains)
 - [x] Extract client IP from request headers (x-forwarded-for support)
 - [x] Update tests to cover rate limit and blocklist rejection
+
+## Bug: Globe Reappeared in Hero
+- [x] Diagnose why globe/sphere reappeared after republish (cached old deployment)
+- [x] Remove globe/sphere and restore clean HeroAgentPanel layout (was never in current code)
+- [x] Republish clean version with cache-busting build hash
