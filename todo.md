@@ -365,3 +365,8 @@
 - [x] Diagnose why globe/sphere reappeared after republish (cached old deployment)
 - [x] Remove globe/sphere and restore clean HeroAgentPanel layout (was never in current code)
 - [x] Republish clean version with cache-busting build hash
+
+## Bug: Tests Firing Real Notifications
+- [x] Mock notifyOwner in contact.submit.test.ts so test runs never hit real notification service
+- [x] Mock notifyOwner in contact.notification.test.ts (was already mocked)
+- [x] Verify no notifications fire when running pnpm test (38 tests passing, all mocked)
